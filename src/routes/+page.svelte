@@ -139,6 +139,7 @@
                             disabled={isRegistering}
                             bind:value={code}
                             type="text"
+                            pattern="\d*"
                             name="code"
                             id="roomCode"
                             maxlength="5"
