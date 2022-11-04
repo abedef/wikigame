@@ -216,7 +216,7 @@ const webSocketServer = {
                 }
 
                 if (!(room in rooms)) {
-                    socket.emit('error', `room ${room} not found`)
+                    socket.emit('error', `invalid room code (${room})`)
                     return;
                 }
 
