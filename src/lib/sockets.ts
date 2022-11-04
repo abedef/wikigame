@@ -133,8 +133,13 @@ const webSocketServer = {
                     const { host, members } = rooms[room];
 
                     if (host === user) {
-                        // Upgrade someone to host, remove host
-                        console.error("Unsupported: host left");
+                        if (members.length === 0) {
+                            delete rooms[room];
+                        } else {
+                            let luckyPerson = `${members.pop()}`;
+                            rooms[room].host = luckyPerson;
+                            io.to(room).emit('membersChanged', [getAvatar(luckyPerson), ...members.map((m) => getAvatar(m))]);
+                        }
                     } else if (members.includes(user)) {
                         console.log(`Removing ${getAvatar(user)} from room ${room} members`);
                         const index = members.indexOf(user);
@@ -190,8 +195,13 @@ const webSocketServer = {
                     const { host, members } = rooms[room];
 
                     if (host === user) {
-                        // Upgrade someone to host, remove host
-                        console.error("Unsupported: host left");
+                        if (members.length === 0) {
+                            delete rooms[room];
+                        } else {
+                            let luckyPerson = `${members.pop()}`;
+                            rooms[room].host = luckyPerson;
+                            io.to(room).emit('membersChanged', [getAvatar(luckyPerson), ...members.map((m) => getAvatar(m))]);
+                        }
                     } else if (members.includes(user)) {
                         console.log(`Removing ${getAvatar(user)} from room ${room} members`);
                         const index = members.indexOf(user);
