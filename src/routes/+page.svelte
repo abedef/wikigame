@@ -1,6 +1,8 @@
 <script lang="ts">
     import { page } from "$app/stores";
 
+    import { fade } from "svelte/transition";
+
     import { io } from "socket.io-client";
     import { onMount } from "svelte";
 
@@ -108,13 +110,21 @@
 
     <main>
         {#if players.length > 0}
-            <h4>
-                Players: {#each players as player}{player}{/each}
-            </h4>
+            <h4>Players:</h4>
+            <div class="funfun">
+                {#each players as player}<div class="player">
+                        <h1 transition:fade>{player}</h1>
+                    </div>{/each}
+            </div>
         {/if}
 
         {#if playerAvatar}
-            You are {playerAvatar}
+            <div class="avatar">
+                <h5>
+                    {playerAvatar}
+                </h5>
+                <h6>you</h6>
+            </div>
         {/if}
 
         <div>
@@ -146,7 +156,8 @@
                         />
                     </div>
                 {:else if state == State.Hosting}
-                    <h3>Your room code is {roomCode}</h3>
+                    <h3>Room code:</h3>
+                    <h4>{roomCode}</h4>
                 {/if}
                 <button on:click={() => (state = State.None)}>Cancel</button>
             {/if}
@@ -160,8 +171,17 @@
         flex-direction: column;
     }
 
-    h3 {
+    h3,
+    h4 {
         text-align: center;
+    }
+
+    h3 {
+        margin-bottom: 0;
+    }
+
+    h4 {
+        margin-top: 0;
     }
 
     input {
@@ -213,5 +233,37 @@
         flex-direction: column;
 
         justify-content: space-evenly;
+    }
+    @keyframes updown {
+        0% {
+            transform: translateY(-5px);
+        }
+
+        50% {
+            transform: translateY(10px);
+        }
+
+        100% {
+            transform: translateY(-5px);
+        }
+    }
+
+    div.player {
+        animation: updown 5s ease infinite;
+    }
+
+    div.funfun {
+        display: flex;
+        flex-wrap: wrap;
+
+        justify-content: center;
+    }
+
+    div.avatar h5 {
+        margin-bottom: 0;
+    }
+
+    div.avatar h6 {
+        margin-top: 0;
     }
 </style>
