@@ -71,13 +71,15 @@ interface MinioObject {
     rooms: RoomsMap;
 };
 
-function importState() {
+async function importState() {
+    const { MINIO_ENDPOINT, MINIO_ACCESS_ID, MINIO_ACCESS_KEY } = await import("./secrets");
     configure(
-        "minio.genieindex.ca",
+        MINIO_ENDPOINT,
         true,
-        "D4itITvnTAIYqzTs",
-        "8xzkDQJfKOitP6RG7WEUh1XGu91Tr8Z7"
+        MINIO_ACCESS_ID,
+        MINIO_ACCESS_KEY
     );
+
     console.log("Trying...");
     getObject("lietome").then(
         (obj: MinioObject) => {
