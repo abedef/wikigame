@@ -1,0 +1,19 @@
+{
+    "rules": "Game Rules",
+    "description": "LieToMe is a game about confidence, memory, deception, and learning new things! Players will learn details about a random Wikipedia article, and lie about articles they've never read before. It is best played in person or over a video call, so you can see each person's face as they lie to you.",
+    "gameSetup": "Game Setup",
+    "gameSetupDescription": "In LieToMe, players have one of three roles: Guesser, Liar, or Truth-Teller. Each round features 1 Guesser (the host is always the Guesser of the 1st round). When the game room opens, non-guessers must find a random Wikipedia article to learn for the round. If they don't like the article, they can continue searching through random articles until they find one they wish to use. They will spend some time memorizing as many details as they can about the article, and once everyone has learned their article's details, the 1st round will start. Don't fret too hard about this step, just learn as much as you can.",
+    "rounds": "Rounds",
+    "roundsDescription": "The game can be played with 3, 5, 7, or infinite rounds (Party Mode). At the start of each round, an article is randomly chosen from the pool of selected articles. If your article was chosen, you are the Truth-Teller. If your article was not chosen, you are a Liar. Do not reveal your role to other players! The title of the selected article is what you will be explaining to the Guesser, and you must convince them that it is the article you chose. If you are the Liar, do not talk about the article you chose, since you will need to explain that one later. The Guesser will then ask everyone questions about the article, and attempt to determine who is lying, and who is telling the truth. Once they are ready, they will guess who the Truth-Teller is. Points will be awarded based on whether they were correct or not, and the setup for the next round will begin. In the next round, the previous Truth-Teller will become the new Guesser, and the previous Guesser will have to find a Wikipedia article to submit. Liars from the previous round will get a chance to review their selected article during this time. When the previous Guesser is ready, an article will be randomly chosen from the pool of selected articles, and the process will repeat until all rounds are over or the host finishes the game.",
+    "otherRules": "Other Rules",
+    "otherRulesDescription": "Players are not allowed to poke holes in another player's answers, however, heckling and laughing are highly encouraged",
+    "scoring": "Scoring",
+    "scoringDescription": "When the Guesser incorrectly guesses an article belongs to a Liar, the Liar gains a point. When the Guesser correctly guesses an article belongs to a Truth-Teller, both the Guesser and the Truth-Teller get a point. The player with the most points at the end of the game wins!",
+    "tips": "Tips",
+    "guessers": "Guessers",
+    "liars": "Liars",
+    "truthTellers": "Truth-Tellers",
+    "tipsForGuesser": "It is a good idea to ask each player to quickly describe the article one by one before diving in for more details. A good question is \"Why is this important enough to be a Wikipedia article?\"",
+    "tipsForLiars": "Lie about something you already know, but the Guesser doesn't know that you know about it. And be confident! You are trying to convince the Guesser this is your article.",
+    "tipsForTruthTellers": "Be confident! The article is yours, you got this!"
+}

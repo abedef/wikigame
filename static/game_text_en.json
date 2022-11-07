@@ -1,0 +1,34 @@
+{
+    "title": "LieToMe",
+    "buttons": {
+        "host": "host",
+        "join": "join",
+        "settings": "settings",
+        "start": "start",
+        "chooseArticle": "Choose article",
+        "readyToGuess": "Ready to guess!",
+        "reveal": "reveal?",
+        "next": "next round",
+        "finish": "End Game",
+        "partyMode": "Party Mode!"
+    },
+    "tooltips": {
+        "findNewArticle": "Find a new random article",
+        "partyMode": "Infinite rounds (the host chooses when to end the game)"
+    },
+    "subtext": {
+        "roomCode": "Room Code",
+        "rounds": "Number of Rounds"
+    },
+    "actions": {
+        "lie": "Lie!",
+        "tellTruth": "Tell the truth!"
+    },
+    "statuses": {
+        "joined": "Joined",
+        "success": "Success",
+        "failed": "Failed",
+        "waiting": "Waiting...",
+        "waitFor": "Waiting for other players"
+    }
+}
