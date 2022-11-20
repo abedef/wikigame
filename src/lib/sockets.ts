@@ -6,25 +6,43 @@ import {
     getObject,
 } from "@genieindex/miniojs";
 
-function getAvatar(user: string): string {
-    if (user in users) {
-        return users[user];
+/**
+ * Checks whether or not user is registered
+ * @param user the user's session ID
+ * @returns true if the user is registered
+ */
+function isRegistered(user: User, room: Room): boolean {
+    return room.members.filter((m) => m.user === user).length > 0;
+}
+
+/**
+ * Returns user's avatar if one has been set, or ⁇ otherwise
+ * @param user the user's session ID
+ * @returns the user's avatar, if it exists
+ */
+function getAvatar(user: User, room: Room): Avatar {
+    if (isRegistered(user, room)) {
+        return room.members.reduce((prev, curr) => {
+            if (curr.user === user) {
+                prev = curr.avatar;
+            }
+            return prev;
+        }, '⁇');
     }
 
     return "⁇";
 }
 
-function register(user: string): string {
-    const avatar = avatars.pop() ?? "👽";
-    console.log(`Registered ${user} as ${avatar}`);
-    users[user] = avatar;
-
-    exportState();
-
-    return avatar;
+/**
+ * Returns all the used avatars (i.e. member list) in the provided room.
+ * @param room the room for which to return the avatars
+ * @returns all used avatars in that room
+ */
+function getAvatars(room: Room): Avatar[] {
+    return room.members.map(({ avatar }) => avatar);
 }
 
-let avatars = [
+const avatars = [
     '🐶', '🐱', '🐭',
     '🐹', '🐰', '🦊',
     '🐻', '🐼', '🐻',
@@ -35,20 +53,25 @@ let avatars = [
 ];
 
 interface Room {
-    host: string;
-    members: string[];
+    host: User; // User ID of host
+    members: MemberMap[]; // all members, including host
+    avatars: Avatar[]; // available, unreserved avatars
 };
+
+type User = string
+type Avatar = string
+type RoomID = string
 
 interface RoomsMap {
-    [index: string]: Room;
+    [index: RoomID]: Room;
 };
 
-interface UsersMap {
-    [index: string]: string;
+interface MemberMap {
+    user: User;
+    avatar: Avatar;
 }
 
 let rooms: RoomsMap = {};
-let users: UsersMap = {};
 
 async function exportState() {
     const { MINIO_ENDPOINT, MINIO_ACCESS_ID, MINIO_ACCESS_KEY } = await import("./secrets");
@@ -58,16 +81,12 @@ async function exportState() {
         MINIO_ACCESS_ID,
         MINIO_ACCESS_KEY
     );
-    return putObject("lietome", {
-        avatars,
+    putObject("lietome", {
         rooms,
-        users,
     });
 }
 
 interface MinioObject {
-    avatars: string[];
-    users: UsersMap;
     rooms: RoomsMap;
 };
 
@@ -83,24 +102,44 @@ async function importState() {
     console.log("Trying...");
     getObject("lietome").then(
         (obj: MinioObject) => {
-            avatars = obj.avatars;
-            users = obj.users;
             rooms = obj.rooms;
 
-            console.log(`set avatars to ${avatars}`);
-            console.log(`set users to ${JSON.stringify(users)}`);
-            console.log(`set rooms to ${JSON.stringify(rooms)}`);
-        },
-        // TODO what is the type of err? see minio docs
-        (err: {}) => {
-            console.log(`error getting object: ${err}`);
-            exportState();
-        },
-    );
+            console.log(`imported rooms ${JSON.stringify(rooms)}`);
+        }).catch(
+            // TODO what is the type of err? see minio docs
+            (err: {}) => {
+                console.log(`error getting object: ${err}`);
+                exportState();
+            },
+        );
 }
 
-function createRoom(user: string): string {
-    let room;
+/**
+ * Joins user to the room with the provided ID as a non-host.
+ * Calling this function when the user is already in the room is harmless.
+ * @param user user to add to the room
+ * @param roomID the room to add the user to
+ * @returns the avatar assigned to this user
+ */
+function joinRoom(user: User, roomID: RoomID): Avatar {
+    const room = rooms[roomID];
+    if (isRegistered(user, room)) {
+        return room.members.reduce((prev, curr) => {
+            if (curr.user === user) {
+                prev = curr.avatar;
+            }
+            return prev;
+        }, '⁇');
+    }
+
+    let avatar = room.avatars.pop() ?? "⁇";
+    room.members.push({ avatar, user });
+
+    return avatar;
+}
+
+function createRoom(user: User): { roomID: RoomID, room: Room } {
+    let room: RoomID;
     do {
         room = `${10000 + Math.floor(Math.random() * 90000)}`;
     } while (room in rooms);
@@ -108,11 +147,14 @@ function createRoom(user: string): string {
     rooms[room] = {
         host: user,
         members: [],
+        avatars: [...avatars],
     };
+
+    joinRoom(user, room);
 
     exportState();
 
-    return room;
+    return { roomID: room, room: rooms[room] };
 }
 
 importState();
@@ -124,122 +166,65 @@ const webSocketServer = {
         const io = new Server(server.httpServer);
 
         io.on('connection', (socket) => {
-            let user: string;
-
-            socket.emit('eventFromServer', `Hello, World 👋`);
+            let currentUser: User;
+            let currentRoomID: RoomID;
 
             socket.on('disconnect', (reason) => {
-                console.log(`${getAvatar(user)} left`);
+                console.log(`${currentUser} left ${currentRoomID}: ${reason}`);
 
-                for (let room in rooms) {
-                    const { host, members } = rooms[room];
-
-                    if (host === user) {
-                        if (members.length === 0) {
-                            delete rooms[room];
-                        } else {
-                            let luckyPerson = `${members.pop()}`;
-                            rooms[room].host = luckyPerson;
-                            io.to(room).emit('membersChanged', [getAvatar(luckyPerson), ...members.map((m) => getAvatar(m))]);
-                        }
-                    } else if (members.includes(user)) {
-                        console.log(`Removing ${getAvatar(user)} from room ${room} members`);
-                        const index = members.indexOf(user);
-                        if (index > -1) { // only splice array when item is found
-                            members.splice(index, 1); // 2nd parameter means remove one item only
-                            io.to(room).emit('membersChanged', [getAvatar(host), ...members.map((m) => getAvatar(m))]);
-                        }
-                    }
-                }
-
-                exportState();
-            });
-
-            socket.on('register', (session: string) => {
-                user = session;
-                socket.data = { session };
-                let avatar = getAvatar(session);
-                console.log(`Registering ${session} (${avatar})`);
-                if (avatar === "⁇") {
-                    if (avatars.length == 0) {
-                        // Sorry we're full
-                        socket.emit('error', 'full');
-                        return
-                    } else {
-                        avatar = register(session);
-                    }
-                }
-
-                socket.join(session);
-                socket.emit('greet', avatar)
-            });
-
-            socket.on('host', (session: string) => {
-                const avatar = getAvatar(session);
-                console.log(`${avatar} is trying to host a room`);
-
-                if (avatar === "⁇") {
-                    socket.emit('error', 'unregistered');
-                    return
-                }
-
-                const room = createRoom(session);
-                console.log(`${avatar} created new room ${room}`);
-
-                socket.join(room);
-                socket.emit('joined', { room, avatar })
-            });
-
-            socket.on('leave', (message: string) => {
-                console.log(`${getAvatar(user)} left`);
-
-                for (let room in rooms) {
-                    const { host, members } = rooms[room];
-
-                    if (host === user) {
-                        if (members.length === 0) {
-                            delete rooms[room];
-                        } else {
-                            let luckyPerson = `${members.pop()}`;
-                            rooms[room].host = luckyPerson;
-                            io.to(room).emit('membersChanged', [getAvatar(luckyPerson), ...members.map((m) => getAvatar(m))]);
-                        }
-                    } else if (members.includes(user)) {
-                        console.log(`Removing ${getAvatar(user)} from room ${room} members`);
-                        const index = members.indexOf(user);
-                        if (index > -1) { // only splice array when item is found
-                            members.splice(index, 1); // 2nd parameter means remove one item only
-                            io.to(room).emit('membersChanged', [getAvatar(host), ...members.map((m) => getAvatar(m))]);
-                        }
-                    }
-                }
-
-                exportState();
-            });
-
-            socket.on('join', (message: string) => {
-                let { session, room }: { session: string, room: string } = JSON.parse(message);
-                const avatar = getAvatar(session);
-                console.log(`${avatar} is trying to join room ${room}`);
-
-                if (avatar === "⁇") {
-                    socket.emit('error', 'unregistered');
-                    return
-                }
-
-                if (!(room in rooms)) {
-                    socket.emit('error', `invalid room code (${room})`)
+                const room = rooms[currentRoomID]; // TODO Make sure this is not null
+                if (!room) {
                     return;
                 }
 
-                let { host, members } = rooms[room];
-                if (!(session in members)) {
-                    members.push(session);
-                    exportState();
+                room.members = room.members.filter((m) => {
+                    if (m.user === currentUser) {
+                        room.avatars.push(m.avatar);
+                        return false;
+                    }
+                    return true;
+                });
+                const avatars = getAvatars(room);
+                socket.to(currentRoomID).emit('members', { avatars, host: room.host });
+                socket.leave(currentRoomID);
+                console.log(JSON.stringify(avatars));
+
+                if (room.host === currentUser) {
+                    room.host = room.members.length > 0 ? room.members[0].user : "";
+                    console.log(room.host);
+                    socket.to(room.host).emit('joined', { host: room.host, roomID: currentRoomID, avatar: getAvatar(room.host, room) })
                 }
-                socket.emit('joined', { room, avatar });
-                socket.join(room);
-                io.to(room).emit('membersChanged', [getAvatar(host), ...members.map((m) => getAvatar(m))]);
+
+                exportState();
+            });
+
+            socket.on('host', (session: User) => {
+                currentUser = session;
+                const { roomID, room } = createRoom(session);
+                const avatar = getAvatar(session, room);
+                console.log(`${avatar} created room ${roomID}`);
+                currentRoomID = roomID;
+                socket.join(roomID);
+                socket.emit('joined', { host: room.host, roomID, avatar });
+            });
+
+            socket.on('join', ({ session, roomID }) => {
+                currentUser = session;
+                if (!(roomID in rooms)) {
+                    socket.emit('error', `invalid room code (${roomID})`)
+                    return
+                }
+
+                const room = rooms[roomID];
+                const avatar = joinRoom(currentUser, roomID);
+                console.log(`${avatar} joined room ${roomID}`);
+                currentRoomID = roomID;
+                socket.join(currentUser)
+                socket.join(roomID)
+                socket.emit('joined', { host: room.host, roomID, avatar });
+                const avatars = getAvatars(room);
+                socket.emit('members', { avatars, host: room.host });
+                socket.to(roomID).emit('members', { avatars, host: room.host });
             });
         });
     },

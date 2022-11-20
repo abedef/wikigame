@@ -1,110 +1,103 @@
 <script lang="ts">
     import { page } from "$app/stores";
-
-    import { fade } from "svelte/transition";
+    import { state, State } from "$lib/stores";
+    import { fade, slide } from "svelte/transition";
 
     import { io } from "socket.io-client";
     import { onMount } from "svelte";
 
     const socket = io();
 
-    enum State {
-        None,
-        Registering,
-        Joining,
-        Hosting,
-    }
+    $: isChilling = $state.state === State.None;
+    $: isRegistering = $state.state === State.Registering;
+    $: isJoining = $state.state === State.Joining;
+    $: hasJoined = $state.state === State.Joined;
+    $: isHosting = $state.state === State.Hosting;
 
-    let state: State = State.None;
+    onMount(() => {
+        if ($state.room.length > 0 && $state.session.length > 0) {
+            code = $state.room;
+        }
+    });
 
-    $: isRegistering = state == State.Registering;
+    // TODO use promises in the socket stuff to make sure no race conditions are encountered
 
+    // TODO if code is provided should redirect to eliminate the query parameter (or make the query parameter not fuck shit up)
     let code = $page.url.searchParams.get("code") ?? "";
     let codeInput: HTMLInputElement;
 
-    function identifyOneself() {
-        session = localStorage.getItem("lietome") ?? "";
-        if (session === "") {
-            localStorage.setItem("lietome", crypto.randomUUID());
-            session = localStorage.getItem("lietome") ?? "";
-            if (session === "") {
-                alert(
-                    "Something's up with your browser's LocalStorage – your performance may be impacted."
-                );
-            }
-        }
-        console.log(
-            `Trying to register ${
-                session === "" ? "<unknown session id>" : session
-            }`
-        );
-        socket.emit("register", session);
-    }
-
-    $: if (code.length == 5) {
-        state = State.Registering;
+    $: if (code.length === 5) {
         codeInput?.blur();
+        $state.state = State.Registering;
 
-        socket.emit("join", JSON.stringify({ session, room: code }));
+        socket.emit("join", { session: $state.session, roomID: code });
         code = "";
-
-        codeInput?.focus();
-        state = State.Registering;
+        $state.state = State.None;
     }
-
-    let session = "";
-    let playerAvatar: string;
-    let roomCode: string;
 
     let players: string[] = [];
 
-    socket.on("eventFromServer", (message) => {
-        console.log(message);
-    });
+    socket.on("greet", ({ user, avatar }) => {
+        console.log(`Identified as ${avatar} (${user})`);
 
-    socket.on("greet", (message) => {
-        console.log(`Identified as ${message}`);
-        playerAvatar = message;
+        if ($state.avatar !== "" && $state.session !== "") {
+            socket.emit("reintroduce", {
+                user: $state.session,
+                avatar: $state.avatar,
+            });
+            $state.avatar = "";
+            $state.session = "";
+        } else {
+            $state.avatar = avatar;
+            $state.session = user;
+        }
     });
 
     socket.on("room", (message) => {
         console.log(`Granted access to room ${message}`);
-        roomCode = message;
-    });
-    socket.on("membersChanged", (message) => {
-        console.log("Updating playerlist");
-        players = message;
+        $state.room = message;
     });
 
-    socket.on("joined", ({ room, avatar }) => {
-        console.log(`Joined ${room} as ${avatar}`);
-        roomCode = room;
-        playerAvatar = avatar;
+    socket.on("members", ({ host, avatars }) => {
+        console.log(`Updating member list from ${players} to ${avatars}`);
+        players = avatars;
+        if (host === $state.session) {
+            $state.state = State.Hosting;
+        }
+    });
+
+    socket.on("joined", ({ host, roomID, avatar }) => {
+        console.log(`Joined ${roomID} as ${avatar}`);
+        $state.room = roomID;
+        $state.avatar = avatar;
+        $state.state = $state.session === host ? State.Hosting : State.Joined;
     });
 
     socket.on("error", (message) => {
         alert(message);
     });
 
-    onMount(identifyOneself);
+    function host() {
+        $state.state = State.Hosting;
+        socket.emit("host", $state.session);
+    }
+    function join() {
+        $state.state = State.Joining;
+    }
+    function cancel() {
+        $state.state = State.None;
+        $state.room = "";
+        $state.avatar = "";
+        players = [];
+    }
 </script>
-
-<svelte:head>
-    <style>
-        html,
-        body {
-            height: 100%;
-            margin: 0;
-        }
-    </style>
-</svelte:head>
 
 <div class="container">
     <div class="logo">
         <img
             class="logo"
             src="logo.png"
-            alt="Lie to Me: The Bullshitting Game"
+            alt="Lie to Me: The Bull$#!&^ing Game"
         />
     </div>
 
@@ -112,61 +105,61 @@
         {#if players.length > 0}
             <h4>Players:</h4>
             <div class="funfun">
-                {#each players as player}<div class="player">
+                {#each players as player, i}
+                    <div class="player">
                         <h1 transition:fade>{player}</h1>
-                    </div>{/each}
+                    </div>
+                {/each}
             </div>
         {/if}
 
-        {#if playerAvatar}
+        {#if $state.avatar !== ""}
             <div class="avatar">
                 <h5>
-                    {playerAvatar}
+                    {$state.avatar}
                 </h5>
                 <h6>you</h6>
             </div>
         {/if}
 
         <div>
-            {#if state == State.None}
-                <button
-                    on:click={() => {
-                        state = State.Hosting;
-                        socket.emit("host", session);
-                    }}>Host</button
-                >
-                <button
-                    on:click={() => {
-                        state = State.Joining;
-                    }}>Join</button
-                >
-            {:else}
-                {#if state == State.Joining}
-                    <div class="roomCodeInput">
-                        <label for="roomCode">Enter room code:</label>
-                        <input
-                            bind:this={codeInput}
-                            disabled={isRegistering}
-                            bind:value={code}
-                            type="text"
-                            pattern="\d*"
-                            name="code"
-                            id="roomCode"
-                            maxlength="5"
-                        />
-                    </div>
-                {:else if state == State.Hosting}
+            {#if isChilling}
+                <button on:click={host}>Host</button>
+                <button on:click={join}>Join</button>
+            {:else if isHosting || hasJoined}
+                <div transition:slide class="roomCodeDisplay">
                     <h3>Room code:</h3>
-                    <h4>{roomCode}</h4>
-                {/if}
-                <button on:click={() => (state = State.None)}>Cancel</button>
+                    <h4>{$state.room}</h4>
+                </div>
+                <div>
+                    <button on:click={cancel}>Leave</button>
+                </div>
+            {:else if isJoining}
+                <div transition:slide class="roomCodeInput">
+                    <label for="roomCode">Enter room code:</label>
+                    <input
+                        bind:this={codeInput}
+                        disabled={isRegistering}
+                        bind:value={code}
+                        type="text"
+                        pattern="\d*"
+                        name="code"
+                        id="roomCode"
+                        maxlength="5"
+                        placeholder="•••••"
+                    />
+                    <div>
+                        <button on:click={cancel}>Cancel</button>
+                    </div>
+                </div>
             {/if}
         </div>
     </main>
 </div>
 
 <style>
-    .roomCodeInput {
+    .roomCodeInput,
+    .roomCodeDisplay {
         display: flex;
         flex-direction: column;
     }
@@ -192,10 +185,6 @@
         max-width: 5ch;
 
         margin: 1rem auto;
-    }
-
-    button {
-        height: 2rem;
     }
 
     div.container {

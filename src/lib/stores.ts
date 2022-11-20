@@ -10,7 +10,7 @@ export enum State {
 };
 
 const stateKey = "ltmstate";
-const defaultState = { session: "", state: State.None, avatar: "", room: "" };
+const defaultState = { session: crypto.randomUUID(), state: State.None, avatar: "", room: "" };
 
 let state = writable(defaultState);
 if (browser) {
