@@ -9,6 +9,16 @@
     }
 </script>
 
+<svelte:head>
+    <meta name="theme-color" content="#dddddd" />
+
+    <style>
+        html {
+            background-color: #dddddd;
+        }
+    </style>
+</svelte:head>
+
 <!-- NOTE the rel property makes sure this page is fully reloaded (more specifically, makes sure the corresponding PageServerLoad function is re-run) -->
 <nav>
     <button disabled class="dice" on:click={lockIn}>LOCK IN</button>
