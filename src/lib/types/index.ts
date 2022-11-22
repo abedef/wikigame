@@ -1,22 +1,22 @@
-export interface Room {
-    host: User; // User ID of host
-    members: MemberMap[]; // all members, including host
+export type Room = {
+    hostID: string; // User ID of host
+    members: User[]; // all members, including host
     avatars: Avatar[]; // available, unreserved avatars
 };
 
-export interface RoomsMap {
+export type RoomsMap = {
     [index: RoomID]: Room;
 };
 
-export interface MemberMap {
-    user: User;
-    avatar: Avatar;
-}
-
-export interface MinioObject {
+export type MinioObject = {
     rooms: RoomsMap;
 };
 
-export type User = string
+export type User = {
+    id: string;
+    avatar: string;
+    name?: string; // TODO: implement
+}
+
 export type Avatar = string
 export type RoomID = string
