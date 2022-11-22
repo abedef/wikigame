@@ -95,8 +95,13 @@
 <div class="container">
     <div class="logo">
         <img
-            class="logo"
+            class="logo-light"
             src="logo.png"
+            alt="Lie to Me: The Bull$#!&^ing Game"
+        />
+        <img
+            class="logo-dark"
+            src="logo-dark.png"
             alt="Lie to Me: The Bull$#!&^ing Game"
         />
     </div>
@@ -210,9 +215,24 @@
         justify-content: center;
     }
 
-    img.logo {
+    img.logo-light {
         /* scale: 0.5; */
         max-width: 122px;
+    }
+    img.logo-dark {
+        /* scale: 0.5; */
+        max-width: 0;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        img.logo-light {
+            /* scale: 0.5; */
+            max-width: 0;
+        }
+        img.logo-dark {
+            /* scale: 0.5; */
+            max-width: 122px;
+        }
     }
 
     main {
