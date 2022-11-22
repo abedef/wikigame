@@ -1,5 +1,7 @@
 <script lang="ts">
     import Dice from "$lib/dice.svelte";
+    import Check from "$lib/check.svelte";
+
     export let data;
 
     let src = `${data.src}`;
@@ -21,7 +23,7 @@
 
 <!-- NOTE the rel property makes sure this page is fully reloaded (more specifically, makes sure the corresponding PageServerLoad function is re-run) -->
 <nav>
-    <button disabled class="dice" on:click={lockIn}>LOCK IN</button>
+    <a class="check" href="/"><Check /></a>
     <a class="dice" href="/random" rel="external"><Dice /></a>
 </nav>
 
@@ -58,7 +60,7 @@
         right: 1rem;
     }
 
-    button.dice {
+    a.check {
         margin-left: 1rem;
     }
 
