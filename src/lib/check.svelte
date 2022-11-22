@@ -44,7 +44,7 @@
 
     div {
         height: calc(100% - 1rem);
-        padding-right: 1rem;
+        padding-left: 1rem;
         padding-top: 1rem;
         overflow: visible;
     }

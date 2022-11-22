@@ -11,19 +11,10 @@
     }
 </script>
 
-<svelte:head>
-    <meta name="theme-color" content="#dddddd" />
-
-    <style>
-        html {
-            background-color: #dddddd;
-        }
-    </style>
-</svelte:head>
-
 <!-- NOTE the rel property makes sure this page is fully reloaded (more specifically, makes sure the corresponding PageServerLoad function is re-run) -->
 <nav>
     <a class="check" href="/"><Check /></a>
+    <h1>Pick an Article</h1>
     <a class="dice" href="/random" rel="external"><Dice /></a>
 </nav>
 
@@ -51,6 +42,7 @@
     }
     iframe {
         border-radius: 1rem;
+        box-shadow: rgba(0, 0, 0, 0.18) 0px 2px 4px;
     }
     div {
         position: absolute;
@@ -58,10 +50,6 @@
         bottom: 1rem;
         left: 1rem;
         right: 1rem;
-    }
-
-    a.check {
-        margin-left: 1rem;
     }
 
     a:hover {
@@ -78,10 +66,14 @@
         padding: 0;
         margin: 0;
 
+        font-family: sans-serif;
+
         flex: 1;
 
-        font-size: smaller;
-
         text-align: center;
+    }
+
+    nav > a {
+        min-width: 3rem;
     }
 </style>
