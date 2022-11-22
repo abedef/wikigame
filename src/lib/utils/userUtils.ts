@@ -1,28 +1,18 @@
-import type { Avatar, Room, User } from "$lib/types";
+import type { Room, User } from "$lib/types";
+import { DEFAULT_AVATAR } from "./avatarUtils";
 
 /**
- * Checks whether or not user is registered
- * @param user the user's session ID
- * @returns true if the user is registered
+ * Checks whether or not user belongs to a room. If true, return the user, if false, return undefined
+ * @param userID the user's session ID
+ * @returns User if the user is registered, undefined if not
  */
- export function isUserRegistered(user: User, room: Room): boolean {
-    return room.members.filter((m) => m.user === user).length > 0;
+export function getUserInRoom(userID: string, room: Room): User | undefined {
+    return room.members.find((member) => member.id === userID)
 }
 
-/**
- * Returns user's avatar if one has been set, or ⁇ otherwise
- * @param user the user's session ID
- * @returns the user's avatar, if it exists
- */
- export function getUserAvatar(user: User, room: Room): Avatar {
-    if (isUserRegistered(user, room)) {
-        return room.members.reduce((prev, curr) => {
-            if (curr.user === user) {
-                prev = curr.avatar;
-            }
-            return prev;
-        }, '⁇');
+export function createUser(session: string): User {
+    return {
+        id: session,
+        avatar: DEFAULT_AVATAR
     }
-
-    return "⁇";
 }

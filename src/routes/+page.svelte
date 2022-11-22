@@ -90,6 +90,13 @@
         $state.avatar = "";
         players = [];
     }
+    function leave() {
+        $state.state = State.None;
+        $state.room = "";
+        $state.avatar = "";
+        players = [];
+        socket.emit("leave", $state.session);
+    }
 </script>
 
 <div class="container">
@@ -118,12 +125,12 @@
             </div>
         {/if}
 
-        {#if $state.avatar !== ""}
+        {#if $state.state === State.Hosting || $state.state === State.Joined}
             <div class="avatar">
                 <h5>
                     {$state.avatar}
                 </h5>
-                <h6>you</h6>
+                <h6>You</h6>
             </div>
         {/if}
 
@@ -137,7 +144,7 @@
                     <h4>{$state.room}</h4>
                 </div>
                 <div>
-                    <button on:click={cancel}>Leave</button>
+                    <button on:click={leave}>Leave</button>
                 </div>
             {:else if isJoining}
                 <div transition:slide class="roomCodeInput">
