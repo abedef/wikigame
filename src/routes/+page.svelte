@@ -1,10 +1,12 @@
 <script lang="ts">
     import { page } from "$app/stores";
-    import { state, State } from "$lib/stores";
-    import { fade, slide } from "svelte/transition";
+    import { state } from "$lib/stores";
+    import { slide } from "svelte/transition";
 
     import { io } from "socket.io-client";
     import { onMount } from "svelte";
+    import PlayerAvatar from "$lib/components/PlayerAvatar.svelte";
+    import { State } from "$lib/enums";
 
     const socket = io();
 
@@ -13,6 +15,7 @@
     $: isJoining = $state.state === State.Joining;
     $: hasJoined = $state.state === State.Joined;
     $: isHosting = $state.state === State.Hosting;
+    $: isPlaying = $state.state === State.Playing;
 
     onMount(() => {
         if ($state.room.length > 0 && $state.session.length > 0) {
@@ -77,26 +80,44 @@
         alert(message);
     });
 
+    socket.on("started", () => {
+        console.log('Game started');
+        $state.state = State.Playing;
+    });
+
+    socket.on("advance", ({ nextStage }) => {
+        $state.stage = nextStage;
+    })
+
     function host() {
         $state.state = State.Hosting;
-        socket.emit("host", $state.session);
-    }
+        socket.emit("host", $state.session, $state.gameConfig);
+    };
     function join() {
         $state.state = State.Joining;
-    }
+    };
     function cancel() {
         $state.state = State.None;
         $state.room = "";
         $state.avatar = "";
         players = [];
-    }
+    };
     function leave() {
         $state.state = State.None;
         $state.room = "";
         $state.avatar = "";
         players = [];
         socket.emit("leave", $state.session);
-    }
+    };
+    function start() {
+        socket.emit("start", $state.room);
+    };
+    function maybeAdvanceStage() {
+        socket.emit("advanceStage");
+    };
+    function chooseArticle() {
+        socket.emit("selectArticle");
+    };
 </script>
 
 <div class="container">
@@ -118,9 +139,7 @@
             <h4>Players:</h4>
             <div class="funfun">
                 {#each players as player, i}
-                    <div class="player">
-                        <h1 transition:fade>{player}</h1>
-                    </div>
+                    <PlayerAvatar avatar={player} />
                 {/each}
             </div>
         {/if}
@@ -144,6 +163,7 @@
                     <h4>{$state.room}</h4>
                 </div>
                 <div>
+                    <button disabled={($state.state !== State.Hosting) || (players.length < 3)} on:click={start}>Start</button>
                     <button on:click={leave}>Leave</button>
                 </div>
             {:else if isJoining}
@@ -164,122 +184,16 @@
                         <button on:click={cancel}>Cancel</button>
                     </div>
                 </div>
+            {:else if isPlaying}
+              <div>
+                <button on:click={chooseArticle}>pick article</button>
+                <button on:click={maybeAdvanceStage}>advance stage</button>
+              </div>
             {/if}
         </div>
     </main>
 </div>
 
 <style>
-    .roomCodeInput,
-    .roomCodeDisplay {
-        display: flex;
-        flex-direction: column;
-    }
-
-    h3,
-    h4 {
-        text-align: center;
-    }
-
-    h3 {
-        margin-bottom: 0;
-    }
-
-    h4 {
-        margin-top: 0;
-    }
-
-    input {
-        text-transform: uppercase;
-
-        text-align: center;
-
-        max-width: 5ch;
-
-        margin: 1rem auto;
-    }
-
-    div.container {
-        margin: 0 auto;
-
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-
-        text-align: center;
-
-        height: 100%;
-
-        max-width: 500px;
-
-        gap: 0.5rem;
-
-        font-family: sans-serif;
-    }
-
-    div.logo {
-        display: flex;
-        justify-content: center;
-    }
-
-    img.logo-light {
-        /* scale: 0.5; */
-        max-width: 122px;
-    }
-    img.logo-dark {
-        /* scale: 0.5; */
-        max-width: 0;
-    }
-
-    @media (prefers-color-scheme: dark) {
-        img.logo-light {
-            /* scale: 0.5; */
-            max-width: 0;
-        }
-        img.logo-dark {
-            /* scale: 0.5; */
-            max-width: 122px;
-        }
-    }
-
-    main {
-        min-height: 300px;
-
-        display: flex;
-        flex-direction: column;
-
-        justify-content: space-evenly;
-    }
-    @keyframes updown {
-        0% {
-            transform: translateY(-5px);
-        }
-
-        50% {
-            transform: translateY(10px);
-        }
-
-        100% {
-            transform: translateY(-5px);
-        }
-    }
-
-    div.player {
-        animation: updown 5s ease infinite;
-    }
-
-    div.funfun {
-        display: flex;
-        flex-wrap: wrap;
-
-        justify-content: center;
-    }
-
-    div.avatar h5 {
-        margin-bottom: 0;
-    }
-
-    div.avatar h6 {
-        margin-top: 0;
-    }
+    @import '../lib/components/root.css';
 </style>

@@ -1,4 +1,4 @@
-import type { Avatar, MinioObject, Room, RoomID, RoomsMap, User } from "$lib/types";
+import type { Avatar, GameConfig, MinioObject, Room, RoomID, RoomsMap, User } from "$lib/types";
 import { AVATARS, DEFAULT_AVATAR, getRandomAvatar, getRandomFromArray } from "./avatarUtils";
 import { getUserInRoom } from "./userUtils";
 import {
@@ -7,6 +7,7 @@ import {
     getObject,
 } from "@genieindex/miniojs";
 import { MINIO_ENDPOINT, MINIO_ACCESS_ID, MINIO_ACCESS_KEY } from '../secrets'
+import { DEFAULT_GAME_STATE } from "./gameUtils";
 
 
 async function importRoomState(): Promise<RoomsMap> {
@@ -34,7 +35,9 @@ async function importRoomState(): Promise<RoomsMap> {
 
 const rooms: RoomsMap = await importRoomState();
 
-export function getRoomState(): RoomsMap { return rooms }
+export function getRoomState(): RoomsMap { return rooms };
+export function getRoom(roomID: string): Room | undefined { return rooms[roomID] };
+export function getRoomHost(roomID: string): User | undefined { return rooms[roomID].members.find(u => u.id === rooms[roomID].hostID)}
 
 export async function exportRoomState(rooms: RoomsMap) {
     configure(
@@ -90,7 +93,7 @@ export async function exportRoomState(rooms: RoomsMap) {
  * @param user user who will be the host
  * @returns an object containing the new roomID and the Room itself
  */
-export function createRoom(user: User): { roomID: RoomID, room: Room } {
+export function createRoom(user: User, options?: GameConfig): { roomID: RoomID, room: Room } {
     let roomID: RoomID;
     do {
         roomID = `${10000 + Math.floor(Math.random() * 90000)}`;
@@ -106,6 +109,12 @@ export function createRoom(user: User): { roomID: RoomID, room: Room } {
         hostID: user.id,
         members: [user],
         avatars: avatars, // list of AVATARS minus avatar from host
+        config: {
+            size: 8,
+            rounds: 8,
+            ...options
+        },
+        gameState: DEFAULT_GAME_STATE,
     };
 
     exportRoomState(rooms);

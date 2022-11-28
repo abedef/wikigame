@@ -1,16 +1,19 @@
 import { writable } from "svelte/store";
 import { browser } from '$app/environment';
-
-export enum State {
-    None,
-    Registering,
-    Joining,
-    Joined,
-    Hosting,
-};
+import { GameStage, State } from "./enums";
 
 const stateKey = "ltmstate";
-const defaultState = { session: crypto.randomUUID(), state: State.None, avatar: "", room: "" };
+const defaultState = {
+    session: crypto.randomUUID(),
+    state: State.None,
+    stage: GameStage.Research,
+    avatar: "",
+    room: "",
+    gameConfig: {
+        size: 8,
+        rounds: 8
+    }
+};
 
 let state = writable(defaultState);
 if (browser) {
