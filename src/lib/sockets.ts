@@ -1,6 +1,7 @@
 import { Server, type ServerOptions } from 'socket.io';
-import type { RoomID, User } from './types';
-import { createRoom, createUser, exportRoomState, getAvatars, getRoomState, joinRoom } from './utils';
+import type { GameConfig, RoomID, User } from './types';
+import { createRoom, createUser, exportRoomState, getAvatars, getRoom, getRoomState, joinRoom } from './utils';
+import { advanceStage, selectArticle, startGame } from './utils/gameUtils';
 
 export default {
     name: 'webSocketServer',
@@ -12,27 +13,34 @@ export default {
             let currentUser: User;
             let currentRoomID: RoomID;
 
-            socket.on('host', (session: string) => {
+            socket.on('host', (session: string, config: GameConfig) => {
                 currentUser = createUser(session);
-                const { roomID, room } = createRoom(currentUser);
+                const { roomID, room } = createRoom(currentUser, config);
                 const avatar = currentUser.avatar;
                 console.log(`${avatar} created room ${roomID}`);
                 currentRoomID = roomID;
                 socket.join(roomID);
                 socket.emit('joined', { host: room.hostID, roomID, avatar });
+                const avatars = getAvatars(room);
+                socket.emit('members', { avatars, host: room.hostID });
+                socket.to(roomID).emit('members', { avatars, host: room.hostID });
             });
 
             socket.on('join', ({ session, roomID }) => {
                 const rooms = getRoomState();
                 if (!(roomID in rooms)) {
-                    socket.emit('error', `invalid room code (${roomID})`)
-                    return
+                    socket.emit('error', `invalid room code (${roomID})`);
+                    return;
                 }
 
                 const room = rooms[roomID];
                 if (room.members.length >= 8) {
-                    socket.emit('error', 'Room full!')
-                    return
+                    socket.emit('error', 'Room full!');
+                    return;
+                }
+                if (room.gameState.round > 0) {
+                    socket.emit('error', 'Game started!');
+                    return;
                 }
 
                 currentUser = currentUser ?? createUser(session);
@@ -41,12 +49,34 @@ export default {
                 currentUser.avatar = avatar;
                 console.log(`${avatar} joined room ${roomID}`);
                 currentRoomID = roomID;
-                socket.join(currentUser.id)
-                socket.join(roomID)
+                socket.join(currentUser.id);
+                socket.join(roomID);
                 socket.emit('joined', { host: room.hostID, roomID, avatar });
                 const avatars = getAvatars(room);
                 socket.emit('members', { avatars, host: room.hostID });
                 socket.to(roomID).emit('members', { avatars, host: room.hostID });
+            });
+
+            socket.on('start', (roomID: string) => {
+                console.log(`Starting game ${roomID}`);
+                startGame(roomID);
+                socket.emit('started');
+                socket.to(roomID).emit('started');
+            });
+
+            socket.on('advanceStage', () => {
+                const room = getRoom(currentRoomID)
+                if (room !== undefined) {
+                    const nextStage = advanceStage(room)
+                    socket.emit('advance', { nextStage });
+                    socket.to(currentRoomID).emit('advance', { nextStage });
+                }
+            });
+
+            socket.on('selectArticle', () => {
+                const nextStage = selectArticle(currentUser, { url: currentUser.id, title: currentUser.avatar }, currentRoomID);
+                socket.emit('advance', { nextStage });
+                socket.to(currentRoomID).emit('advance', { nextStage });
             });
 
             socket.on('leave', (reason) => {
