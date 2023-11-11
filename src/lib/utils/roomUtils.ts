@@ -1,44 +1,30 @@
 import type {
-  Avatar,
-  GameConfig,
-  MinioObject,
-  Room,
-  RoomID,
-  RoomsMap,
-  User,
+    Avatar,
+    GameConfig, Room,
+    RoomID,
+    RoomsMap,
+    User
 } from "../types";
 import {
-  AVATARS,
-  DEFAULT_AVATAR,
-  getRandomAvatar,
-  getRandomFromArray,
+    AVATARS,
+    DEFAULT_AVATAR,
+    getRandomAvatar,
+    getRandomFromArray,
 } from "./avatarUtils";
 import { getUserInRoom } from "./userUtils";
-import { configure, putObject, getObject } from "@genieindex/miniojs";
-import { MINIO_ENDPOINT, MINIO_ACCESS_ID, MINIO_ACCESS_KEY } from "../secrets";
 import { DEFAULT_GAME_STATE } from "./gameUtils";
+import PocketBase from 'pocketbase';
+
+const pb = new PocketBase(
+    true ? "http://100.77.33.133:8088" : "https://pocketbase.genieindex.ca");
 
 async function importRoomState(): Promise<RoomsMap> {
-    configure(
-        MINIO_ENDPOINT,
-        true,
-        MINIO_ACCESS_ID,
-        MINIO_ACCESS_KEY
-    );
-
     console.log("Trying to retrieve room state...");
-    getObject("lietome").then(
-        (obj: MinioObject) => {
-            console.log(`imported rooms ${JSON.stringify(obj.rooms)}`);
-            return obj.rooms;
-        }).catch(
-            // TODO what is the type of err? see minio docs
-            (err: {}) => {
-                console.log(`error getting object: ${err}`);
-                exportRoomState(rooms || {});
-            },
-        );
-    return {}
+    const record = await pb.collection<{rooms:RoomsMap}>('state').getOne('903tiw5dqajwo6n');
+    return record.rooms;
+
+    // I did this initially to set up the object in the db
+    // exportRoomState(rooms || {});
 }
 
 const rooms: RoomsMap = await importRoomState();
@@ -48,15 +34,7 @@ export function getRoom(roomID: string): Room | undefined { return rooms[roomID]
 export function getRoomHost(roomID: string): User | undefined { return rooms[roomID].members.find(u => u.id === rooms[roomID].hostID)}
 
 export async function exportRoomState(rooms: RoomsMap) {
-    configure(
-        MINIO_ENDPOINT,
-        true,
-        MINIO_ACCESS_ID,
-        MINIO_ACCESS_KEY
-    );
-    putObject("lietome", {
-        rooms,
-    });
+    await pb.collection('state').update('903tiw5dqajwo6n', {rooms});
 }
 
 /**
