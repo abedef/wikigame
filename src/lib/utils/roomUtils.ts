@@ -1,14 +1,22 @@
-import type { Avatar, GameConfig, MinioObject, Room, RoomID, RoomsMap, User } from "$lib/types";
-import { AVATARS, DEFAULT_AVATAR, getRandomAvatar, getRandomFromArray } from "./avatarUtils";
-import { getUserInRoom } from "./userUtils";
+import type {
+  Avatar,
+  GameConfig,
+  MinioObject,
+  Room,
+  RoomID,
+  RoomsMap,
+  User,
+} from "../types";
 import {
-    configure,
-    putObject,
-    getObject,
-} from "@genieindex/miniojs";
-import { MINIO_ENDPOINT, MINIO_ACCESS_ID, MINIO_ACCESS_KEY } from '../secrets'
+  AVATARS,
+  DEFAULT_AVATAR,
+  getRandomAvatar,
+  getRandomFromArray,
+} from "./avatarUtils";
+import { getUserInRoom } from "./userUtils";
+import { configure, putObject, getObject } from "@genieindex/miniojs";
+import { MINIO_ENDPOINT, MINIO_ACCESS_ID, MINIO_ACCESS_KEY } from "../secrets";
 import { DEFAULT_GAME_STATE } from "./gameUtils";
-
 
 async function importRoomState(): Promise<RoomsMap> {
     configure(

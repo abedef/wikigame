@@ -1,5 +1,5 @@
-import { GameStage } from "$lib/enums";
-import type { Article, GameState, Room, User } from "$lib/types";
+import { GameStage } from "../enums";
+import type { Article, GameState, Room, User } from "../types";
 import { getRoom } from "./roomUtils";
 
 export const DEFAULT_GAME_STATE: GameState = {
