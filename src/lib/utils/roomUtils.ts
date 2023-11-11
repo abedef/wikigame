@@ -14,9 +14,9 @@ import {
 import { getUserInRoom } from "./userUtils";
 import { DEFAULT_GAME_STATE } from "./gameUtils";
 import PocketBase from 'pocketbase';
+import { env } from '$env/dynamic/public';
 
-const pb = new PocketBase(
-    true ? "http://100.77.33.133:8088" : "https://pocketbase.genieindex.ca");
+const pb = new PocketBase(env.PUBLIC_POCKETBASE_URL);
 
 async function importRoomState(): Promise<RoomsMap> {
     console.log("Trying to retrieve room state...");

@@ -1,10 +1,9 @@
 // import { error } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 import PocketBase from "pocketbase";
+import { env } from "$env/dynamic/public";
 
-const pb = new PocketBase(
-  true ? "http://100.77.33.133:8088" : "https://pocketbase.genieindex.ca"
-);
+const pb = new PocketBase(env.PUBLIC_POCKETBASE_URL);
 
 type GameArticle = {
   id: string;

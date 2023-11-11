@@ -4,14 +4,7 @@
 
 ## Requirements
 
-To run the server, you must configure the appropriate secrets.
-Storing and retrieving data from the MinIO instance requires three values to be set up in `src/lib/secrets.ts`:
-
-```ts
-export const MINIO_ENDPOINT = "minio.example.com"
-export const MINIO_ACCESS_ID = "yourminioaccessid"
-export const MINIO_ACCESS_KEY = "yourminioaccesskey"
-```
+To run the server, you must configure a PocketBase instance and define `PUBLIC_POCKETBASE_URL` in `.env`.
 
 Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte).
 
