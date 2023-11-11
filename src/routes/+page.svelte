@@ -7,6 +7,7 @@
     import { onMount } from "svelte";
     import PlayerAvatar from "$lib/components/PlayerAvatar.svelte";
     import { State } from "$lib/enums";
+    import { SocketEvent } from "$lib";
 
     const socket = io();
 
@@ -33,18 +34,18 @@
         codeInput?.blur();
         $state.state = State.Registering;
 
-        socket.emit("join", { session: $state.session, roomID: code });
+        socket.emit(SocketEvent.Join, { session: $state.session, roomID: code });
         code = "";
         $state.state = State.None;
     }
 
     let players: string[] = [];
 
-    socket.on("greet", ({ user, avatar }) => {
+    socket.on(SocketEvent.Greet, ({ user, avatar }) => {
         console.log(`Identified as ${avatar} (${user})`);
 
         if ($state.avatar !== "" && $state.session !== "") {
-            socket.emit("reintroduce", {
+            socket.emit(SocketEvent.Reintroduce, {
                 user: $state.session,
                 avatar: $state.avatar,
             });
@@ -56,12 +57,12 @@
         }
     });
 
-    socket.on("room", (message) => {
+    socket.on(SocketEvent.Room, (message) => {
         console.log(`Granted access to room ${message}`);
         $state.room = message;
     });
 
-    socket.on("members", ({ host, avatars }) => {
+    socket.on(SocketEvent.Members, ({ host, avatars }) => {
         console.log(`Updating member list from ${players} to ${avatars}`);
         players = avatars;
         if (host === $state.session) {
@@ -69,29 +70,29 @@
         }
     });
 
-    socket.on("joined", ({ host, roomID, avatar }) => {
+    socket.on(SocketEvent.Joined, ({ host, roomID, avatar }) => {
         console.log(`Joined ${roomID} as ${avatar}`);
         $state.room = roomID;
         $state.avatar = avatar;
         $state.state = $state.session === host ? State.Hosting : State.Joined;
     });
 
-    socket.on("error", (message) => {
+    socket.on(SocketEvent.Error, (message) => {
         alert(message);
     });
 
-    socket.on("started", () => {
+    socket.on(SocketEvent.Started, () => {
         console.log('Game started');
         $state.state = State.Playing;
     });
 
-    socket.on("advance", ({ nextStage }) => {
+    socket.on(SocketEvent.Advance, ({ nextStage }) => {
         $state.stage = nextStage;
     })
 
     function host() {
         $state.state = State.Hosting;
-        socket.emit("host", $state.session, $state.gameConfig);
+        socket.emit(SocketEvent.Host, $state.session, $state.gameConfig);
     };
     function join() {
         $state.state = State.Joining;
@@ -107,16 +108,16 @@
         $state.room = "";
         $state.avatar = "";
         players = [];
-        socket.emit("leave", $state.session);
+        socket.emit(SocketEvent.Leave, $state.session);
     };
     function start() {
-        socket.emit("start", $state.room);
+        socket.emit(SocketEvent.Start, $state.room);
     };
     function maybeAdvanceStage() {
-        socket.emit("advanceStage");
+        socket.emit(SocketEvent.AdvanceStage);
     };
     function chooseArticle() {
-        socket.emit("selectArticle");
+        socket.emit(SocketEvent.SelectArticle);
     };
 </script>
 
