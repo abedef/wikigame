@@ -82,8 +82,7 @@ export default {
 
             socket.on(SocketEvent.Leave, (reason) => {
                 const rooms = getRoomState();
-                console.log(`${currentUser} left ${currentRoomID}: ${reason}`);
-
+                console.log(`${currentUser.name ?? currentUser.avatar} left ${currentRoomID}: ${reason}`);
                 const room = rooms[currentRoomID]; // TODO Make sure this is not null
                 if (!room) {
                     return;
