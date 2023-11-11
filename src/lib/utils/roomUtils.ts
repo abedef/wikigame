@@ -14,7 +14,8 @@ import {
 import { getUserInRoom } from "./userUtils";
 import { DEFAULT_GAME_STATE } from "./gameUtils";
 import PocketBase from 'pocketbase';
-import { env } from '$env/dynamic/public';
+
+const env = { PUBLIC_POCKETBASE_URL: "http://100.77.33.133:8088" };
 
 const pb = new PocketBase(env.PUBLIC_POCKETBASE_URL);
 
