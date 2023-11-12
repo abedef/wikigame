@@ -1,4 +1,4 @@
-import type { GameStage } from "../enums";
+import type { GameStage } from "./enums";
 
 export type GameConfig = {
   size: 3 | 4 | 5 | 6 | 7 | 8;
