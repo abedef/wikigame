@@ -11,6 +11,25 @@
 
     const socket = io();
 
+    let timer = 0;
+    let timerId: NodeJS.Timeout;
+    const startTimer = () => timerId = setInterval(() => timer += 1, 1000);
+    const stopTimer = () => clearInterval(timerId);
+    const restartTimer = () => {
+        stopTimer();
+        startTimer();
+    };
+
+type GameArticle = {
+    id: string;
+    url: string;
+    title: string;
+  };
+
+  let articles: GameArticle[] = [];
+  $: src = articles.length > 0 ? articles.at(0)?.url : '';
+  $: title = articles.length > 0 ? articles.at(0)?.title: "";
+
     $: isChilling = $state.state === State.None;
     $: isRegistering = $state.state === State.Registering;
     $: isJoining = $state.state === State.Joining;
@@ -81,9 +100,12 @@
         alert(message);
     });
 
-    socket.on(SocketEvent.Started, () => {
+    socket.on(SocketEvent.Started, (randomArticles: GameArticle[]) => {
         console.log('Game started');
+        console.log(randomArticles);
+        articles = randomArticles;
         $state.state = State.Playing;
+        startTimer();
     });
 
     socket.on(SocketEvent.Advance, ({ nextStage }) => {
@@ -117,8 +139,12 @@
         socket.emit(SocketEvent.AdvanceStage);
     };
     function chooseArticle() {
-        socket.emit(SocketEvent.SelectArticle);
+        socket.emit(SocketEvent.SelectArticle, articles.at(0));
     };
+    function skipArticle() {
+        if (articles.length > 1) articles = articles.slice(1);
+        // TODO Handle "out of articles" situation
+    }
 </script>
 
 <div class="container">
@@ -188,8 +214,22 @@
             {:else if isPlaying}
               <div>
                 <button on:click={chooseArticle}>pick article</button>
+                <button disabled={!(articles.length > 1)} on:click={skipArticle}>{articles.length > 1 ? 'skip article' : 'no skips remaining'}</button>
                 <button on:click={maybeAdvanceStage}>advance stage</button>
               </div>
+              <h1>Players are making their selections...</h1>
+              <h2>{timer}</h2>
+              {#if src}
+                  <iframe
+                      {src}
+                      {title}
+                      frameborder="0"
+                      width="100%"
+                      height="100%"
+                  />
+              {:else}
+                  <h1>Loading...</h1>
+              {/if}
             {/if}
         </div>
     </main>

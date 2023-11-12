@@ -3,6 +3,26 @@ import type { GameConfig, RoomID, User } from './types';
 import { createRoom, createUser, exportRoomState, getAvatars, getRoom, getRoomState, joinRoom } from './utils';
 import { advanceStage, selectArticle, startGame } from './utils/gameUtils';
 import { SocketEvent } from '.';
+import PocketBase from 'pocketbase';
+
+const env = { PUBLIC_POCKETBASE_URL: "http://100.77.33.133:8088" };
+
+type GameArticle = {
+    id: string;
+    url: string;
+    title: string;
+  };
+
+const chunkate = (items: any[], chunkSize = 10) => {
+    const chunks = [];
+    for (let i = 0; i < items.length; i += chunkSize) {
+        const chunk = items.slice(i, i + chunkSize);
+        chunks.push(chunk);
+    }
+    return chunks;
+}
+
+const pb = new PocketBase(env.PUBLIC_POCKETBASE_URL);
 
 export default {
     name: 'webSocketServer',
@@ -58,11 +78,22 @@ export default {
                 socket.to(roomID).emit(SocketEvent.Members, { avatars, host: room.hostID });
             });
 
-            socket.on(SocketEvent.Start, (roomID: string) => {
+            socket.on(SocketEvent.Start, async (roomID: string) => {
                 console.log(`Starting game ${roomID}`);
                 startGame(roomID);
-                socket.emit(SocketEvent.Started);
-                socket.to(roomID).emit(SocketEvent.Started);
+                socket.emit(SocketEvent.Started, []);
+                const rooms = getRoomState();
+                const room = rooms[roomID]
+                if (!room) {
+                    return;
+                }
+                const articles = (await pb
+                    .collection<GameArticle>("articles")
+                    .getList(1, (room.members.length - 1) * 10, {
+                      sort: "@random"
+                    })).items;
+                const chunks = chunkate(articles);
+                room.members.filter(member => member.id !== room.hostID).forEach((member, i) => socket.to(member.id).emit(SocketEvent.Started, chunks[i]));
             });
 
             socket.on(SocketEvent.AdvanceStage, () => {
@@ -74,8 +105,9 @@ export default {
                 }
             });
 
-            socket.on(SocketEvent.SelectArticle, () => {
-                const nextStage = selectArticle(currentUser, { url: currentUser.id, title: currentUser.avatar }, currentRoomID);
+            socket.on(SocketEvent.SelectArticle, (article: GameArticle) => {
+                const nextStage = selectArticle(currentUser, { url: article.url, title: article.title }, currentRoomID);
+                console.log(`someone locked in ${article.title}`)
                 socket.emit(SocketEvent.Advance, { nextStage });
                 socket.to(currentRoomID).emit(SocketEvent.Advance, { nextStage });
             });
