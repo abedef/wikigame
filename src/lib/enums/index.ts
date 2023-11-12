@@ -13,3 +13,23 @@ export enum GameStage {
     Guessing,
     EndRound,
 }
+
+export enum SocketEvent {
+    Connection = "connection",
+    Host = "host",
+    Join = "join",
+    Joined = "joined",
+    Start = "start",
+    Started = "started",
+    AdvanceStage = "advanceStage",
+    Advance = "advance",
+    SelectArticle = "selectArticle",
+    Leave = "leave",
+    Disconnect = "disconnect",
+    Error = "error",
+    Members = "members",
+    Room = "room",
+    Reintroduce = "reintroduce",
+    Greet = "greet",
+  }
+  

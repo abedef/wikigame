@@ -2,7 +2,7 @@ import { Server, type ServerOptions } from 'socket.io';
 import type { GameConfig, RoomID, User } from './types';
 import { createRoom, createUser, exportRoomState, getAvatars, getRoom, getRoomState, joinRoom } from './utils';
 import { advanceStage, selectArticle, startGame } from './utils/gameUtils';
-import { SocketEvent } from '.';
+import { SocketEvent } from './enums';
 import PocketBase from 'pocketbase';
 
 const env = { PUBLIC_POCKETBASE_URL: "http://100.77.33.133:8088" };

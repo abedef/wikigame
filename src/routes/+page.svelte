@@ -7,7 +7,7 @@
     import { onMount } from "svelte";
     import PlayerAvatar from "$lib/components/PlayerAvatar.svelte";
     import { State } from "$lib/enums";
-    import { SocketEvent } from "$lib";
+    import { SocketEvent } from "$lib/enums";
 
     const socket = io();
 
