@@ -5,6 +5,12 @@ export type GameConfig = {
   rounds: 3 | 5 | 8 | 0; // 0 is infinite, "party mode"
 };
 
+export type GameArticle = {
+    id: string;
+    url: string;
+    title: string;
+  };
+
 export type Article = {
     url: string,
     title: string,

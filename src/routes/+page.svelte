@@ -7,6 +7,7 @@
     import { onMount } from "svelte";
     import PlayerAvatar from "$lib/PlayerAvatar.svelte";
     import { State, SocketEvent } from "$lib/enums";
+    import type { GameArticle } from "$lib/types";
 
     const socket = io();
 
@@ -17,12 +18,6 @@
     const restartTimer = () => {
         stopTimer();
         startTimer();
-    };
-
-type GameArticle = {
-    id: string;
-    url: string;
-    title: string;
   };
 
   let articles: GameArticle[] = [];
