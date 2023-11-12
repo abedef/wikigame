@@ -1,7 +1,7 @@
 import { Server, type ServerOptions } from 'socket.io';
 import type { GameArticle, GameConfig, RoomID, User } from './types';
-import { createRoom, createUser, exportRoomState, getAvatars, getRoom, getRoomState, joinRoom } from './utils';
-import { advanceStage, selectArticle, startGame } from './utils/gameUtils';
+import { createRoom, createUser, exportRoomState, getAvatars, getRoom, getRoomState, joinRoom } from './helpers';
+import { advanceStage, selectArticle, startGame } from './helpers';
 import { SocketEvent } from './enums';
 import PocketBase from 'pocketbase';
 
