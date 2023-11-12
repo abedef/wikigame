@@ -5,9 +5,8 @@
 
     import { io } from "socket.io-client";
     import { onMount } from "svelte";
-    import PlayerAvatar from "$lib/components/PlayerAvatar.svelte";
-    import { State } from "$lib/enums";
-    import { SocketEvent } from "$lib/enums";
+    import PlayerAvatar from "$lib/PlayerAvatar.svelte";
+    import { State, SocketEvent } from "$lib/enums";
 
     const socket = io();
 
