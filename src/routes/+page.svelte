@@ -1,7 +1,6 @@
 <script lang="ts">
   import { SocketEvent, type Article, type Room, type PlayerID } from "$lib";
   import { io } from "socket.io-client";
-  import { slide } from "svelte/transition";
   import type { PageServerData } from "./$types";
   import { onMount } from "svelte";
   import Renamer from "$lib/renamer.svelte";
@@ -100,7 +99,7 @@
         {/each}
       </div>
 
-      <div transition:slide class="roomCodeDisplay">
+      <div class="roomCodeDisplay">
         <h4 class="code">{room.code}</h4>
         <h6 class="code">Room code</h6>
       </div>
