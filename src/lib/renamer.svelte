@@ -28,7 +28,7 @@
   />
 </span>
 
-<div on:click={beginEditing} on:>
+<div on:click={beginEditing}>
   <input type="text" bind:value={rawName} placeholder="Enter name" />
 </div>
 
