@@ -24,7 +24,8 @@
     code = "";
   }
 
-  const saveName = () => socket.emit(SocketEvent.Update, data.id, name);
+  const saveName = (newName: string) =>
+    socket.emit(SocketEvent.Update, data.id, newName);
   const start = () => socket.emit(SocketEvent.Start, code);
   const host = () => socket.emit(SocketEvent.Host, data.id);
   const leave = () => {
@@ -104,6 +105,8 @@
         <h6 class="code">Room code</h6>
       </div>
 
+      <Renamer {name} {saveName} />
+
       <button
         disabled={!!"state !== State.Hosting" || room.players.length < 3}
         on:click={start}>Start</button
@@ -128,8 +131,6 @@
       {/if}
       <button on:click={leave}>Leave</button>
     {/if}
-
-    <Renamer bind:name {saveName} />
   </main>
 </div>
 
