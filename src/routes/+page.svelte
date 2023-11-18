@@ -1,46 +1,73 @@
 <script lang="ts">
-  import { SocketEvent, type Article, type Room, type PlayerID } from "$lib";
+  import { SocketEvent, type Room, type PlayerID, Stage } from "$lib";
   import { io } from "socket.io-client";
   import type { PageServerData } from "./$types";
   import { onMount } from "svelte";
   import Renamer from "$lib/renamer.svelte";
+  import RoomCode from "$lib/roomcode.svelte";
+  import Leaderboard from "$lib/leaderboard.svelte";
 
   export let data: PageServerData;
 
-  $: console.log(data);
-
   let room: Room | undefined;
-  let articles: Article[] = [];
   let codeInput: HTMLInputElement;
-  let code: string = "";
+  let rawCode: string = "";
   let name: string = "";
 
-  $: src = articles.at(0)?.url ?? "";
-  $: title = articles.at(0)?.title ?? "";
-  $: if (code?.length === 5 && !room) {
+  $: players = room?.expand?.players ?? [];
+  $: code = room?.code ?? "";
+  $: guesser = room?.guesser ?? "";
+  $: guessee = room?.guessee ?? "";
+  $: article = room?.expand?.players.find((player) => player.id === thisPlayer)
+    ?.expand?.article;
+  $: articles =
+    room?.expand?.players.find((player) => player.id === thisPlayer)?.expand
+      ?.articles ?? [];
+  $: thisPlayer = data.id;
+  $: thisPlayerIsGuesser = thisPlayer === guesser;
+  $: thisPlayerIsGuessee = thisPlayer === guessee;
+
+  $: src = article?.url ?? "";
+  $: title = article?.title ?? "";
+  $: if (rawCode?.length === 5 && !room) {
     codeInput?.blur();
-    socket.emit(SocketEvent.Join, data.id, code);
-    code = "";
+    socket.emit(SocketEvent.Join, data.id, rawCode);
+    rawCode = "";
   }
+
+  const helper = () => {
+    if (thisPlayerIsGuessee) {
+      alert(
+        `This happens to be your topic! You can't go back and read any more of your article now – hopefully you remembered enough from your readings that you can convince the guesser ${
+          room?.expand?.guesser?.name ?? guesser
+        } that it was indeed you who read it!`
+      );
+    } else if (thisPlayerIsGuesser) {
+      alert(
+        `You are the guesser. One of your players read the article of the round – your goal is to figure out who! Ask each player to tell you about the topic and use your insight to tell apart liars from the truth-teller.`
+      );
+    } else {
+      alert(
+        `You read a different topic... but that's ok! Your topic will come up in a later round. For now, pretend you know everything there is about this topic and do your best to convince the guesser ${
+          room?.expand?.guesser?.name ?? guesser
+        } that it was actually you who read it!`
+      );
+    }
+  };
 
   const saveName = (newName: string) =>
     socket.emit(SocketEvent.Update, data.id, newName);
-  const start = () => socket.emit(SocketEvent.Start, code);
+  const start = () => socket.emit(SocketEvent.Start, data.id, room?.id);
   const host = () => socket.emit(SocketEvent.Host, data.id);
-  const leave = () => {
-    socket.emit(SocketEvent.Leave, data.id);
-    room = undefined;
-  };
+  const leave = () => socket.emit(SocketEvent.Leave, data.id);
   const kick = (id: PlayerID) => socket.emit(SocketEvent.Kick, id);
-
-  const skipArticle = () => {
-    if (articles.length > 1) articles = articles.slice(1);
-  };
-
+  const guess = (id: PlayerID) => socket.emit(SocketEvent.Guess, id);
+  const skipArticle = () => socket.emit(SocketEvent.SkipArticle, data.id);
+  const advance = () => socket.emit(SocketEvent.LockIn, room?.id);
   const socket = io();
-  socket.prependAny((event, ...args) => console.info(`→ ${event}`, args));
+  socket.prependAny((event, ...args) => console.info(`⤵️ ${event}`, args));
   socket.prependAnyOutgoing((event, ...args) =>
-    console.info(`← ${event}`, args)
+    console.info(`⤴️ ${event}`, args)
   );
   socket.on(SocketEvent.Update, (update: Room | undefined) => {
     room = update;
@@ -67,6 +94,8 @@
     />
   </div>
 
+  {room?.stage}
+
   <main>
     {#if !room}
       <button on:click={host}>Host a Room</button>
@@ -78,7 +107,7 @@
       <label for="roomCode">Enter room code:</label>
       <input
         bind:this={codeInput}
-        bind:value={code}
+        bind:value={rawCode}
         type="text"
         pattern="\d*"
         name="code"
@@ -87,55 +116,56 @@
         placeholder="•••••"
       />
     {:else}
-      <div id="players">
-        {#each room.expand?.players ?? [] as player}
-          <code title={player.id}
-            >{player.name.length > 0 ? player.name : player.id}{player.id ===
-            data.id
-              ? " (you)"
-              : ""}
-            <a href="#" on:click={() => kick(player.id)}>×</a>
-          </code>
-        {/each}
-      </div>
-
-      <div class="roomCodeDisplay">
-        <h4 class="code">{room.code}</h4>
-        <h6 class="code">Room code</h6>
-      </div>
-
+      <Leaderboard {players} {thisPlayer} {guesser} {kick} {guess} />
+      <RoomCode {code} />
       <Renamer {name} {saveName} />
 
-      <button
-        disabled={!!"state !== State.Hosting" || room.players.length < 3}
-        on:click={start}>Start</button
-      >
-
-      {#if articles.length > 0}
-        <div>
-          <button on:click={() => "selectArticle"}>pick article</button>
-          <button disabled={!(articles.length > 1)} on:click={skipArticle}
-            >{articles.length > 1
-              ? `skip article (${articles.length - 1} skips left)`
-              : "no skips remaining"}</button
-          >
-          <button on:click={() => {}}>advance stage</button>
-        </div>
-        <h1>Players are making their selections...</h1>
-        {#if src}
-          <iframe {src} {title} frameborder="0" width="100%" height="100%" />
-        {:else}
-          <h1>Loading...</h1>
-        {/if}
+      {#if room.stage === Stage.Lobby}
+        <button
+          disabled={room.players.length < 3 || !thisPlayerIsGuesser}
+          on:click={start}>Start</button
+        >
       {/if}
+      {#if room.players.length < 3}
+        <code>3+ players required to begin</code>
+      {/if}
+
+      {#if room.stage === Stage.Researching}
+        <div>
+          {#if thisPlayerIsGuesser}
+            <button on:click={advance}>advance stage</button>
+            <h1>Players are making their selections...</h1>
+          {:else}
+            <button disabled={articles.length <= 1} on:click={skipArticle}
+              >{articles.length > 1
+                ? `skip article (${articles.length - 1} skips left)`
+                : "no skips remaining"}</button
+            >
+            {#if src && articles.length > 0}
+              <iframe
+                {src}
+                {title}
+                frameborder="0"
+                width="100%"
+                height="100%"
+              />
+            {:else}
+              <h1>Loading...</h1>
+            {/if}
+          {/if}
+        </div>
+      {:else if room.stage === Stage.Guessing}
+        <h1>The topic of this round is...</h1>
+        <h2>{room.expand?.guessee?.expand?.article.title}</h2>
+        <a href="#" on:click={helper}>Confused? Click for instructions.</a>
+      {/if}
+      <br /><br /><br />
       <button on:click={leave}>Leave</button>
     {/if}
   </main>
 </div>
 
 <style>
-  div#players {
-  }
   h4.code {
     margin: 0;
   }

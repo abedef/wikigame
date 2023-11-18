@@ -12,6 +12,7 @@
   - "Confused? Click here to learn what your current roles and goals are – but make sure no one is looking over your shoulder!"
 - It should appear like each article is locked in as soon as it is displayed
 - Support "kicking" players as the host/guesser
+- Add a timer to the skip button (as a sort-of debounce mechanism);
 
 ## Requirements
 

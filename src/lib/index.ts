@@ -6,11 +6,17 @@ export enum SocketEvent {
   Start = "start",
   LockIn = "lockin",
   Guess = "guess",
-  SelectArticle = "selectArticle",
+  SkipArticle = "skipArticle",
   Leave = "leave",
   Kick = "kick",
   Error = "error",
   Update = "update",
+}
+
+export enum Stage {
+  Lobby = 0,
+  Researching = 1,
+  Guessing = 2,
 }
 
 export type Article = {
@@ -28,7 +34,7 @@ export type Room = {
     guesser?: Player;
   };
   players: PlayerID[];
-  guessee: PlayerID | undefined;
+  guessee?: PlayerID;
 
   /**
    * Somewhat synonymous with "host" – the player
@@ -36,8 +42,8 @@ export type Room = {
    * flow of the current round (i.e. advancing stages
    * and making guesses).
    */
-  guesser: PlayerID | undefined;
-  round: number;
+  guesser?: PlayerID;
+  stage: number;
 };
 
 export type Player = {

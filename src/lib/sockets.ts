@@ -7,11 +7,13 @@ import {
   type PlayerID,
   type Room,
   type RoomID,
+  Stage,
 } from ".";
 
 const env = { PUBLIC_POCKETBASE_URL: "http://100.77.33.133:8088" };
 
 const pb = new PocketBase(env.PUBLIC_POCKETBASE_URL);
+pb.autoCancellation(false);
 const roomsPB = pb.collection<Room>("rooms");
 const playersPB = pb.collection<Player>("players");
 const articlesPB = pb.collection<Article>("articles");
@@ -47,7 +49,9 @@ export async function createPlayer(name?: PlayerID) {
  */
 export async function getPlayer(id?: PlayerID) {
   if (!id) return undefined;
-  return await playersPB.getOne(id, { expand: "room" }).catch(() => undefined);
+  return await playersPB
+    .getOne(id, { expand: "room,articles" })
+    .catch(() => undefined);
 }
 
 /**
@@ -76,7 +80,10 @@ async function createRoom() {
 /** Returns the corresponding `Room`, if it exists. */
 async function getRoom(id: RoomID) {
   return await roomsPB
-    .getOne(id, { expand: "players,guessee,guesser" })
+    .getOne(id, {
+      expand:
+        "players,guessee,guesser,players.articles,players.article,guessee.article",
+    })
     .catch(() => undefined);
 }
 
@@ -84,12 +91,12 @@ async function getRoom(id: RoomID) {
 async function getRoomByCode(code: string) {
   return await roomsPB
     .getFirstListItem(`code = "${code}"`, {
-      expand: "players,guessee,guesser",
+      expand:
+        "players,guessee,guesser,players.articles,players.article,guessee.article",
     })
     .catch(() => undefined);
 }
 
-/** TODO */
 async function startGame(socket: Socket, id: PlayerID, roomID: RoomID) {
   const player = await getPlayer(id);
   if (!player) {
@@ -105,29 +112,30 @@ async function startGame(socket: Socket, id: PlayerID, roomID: RoomID) {
     socket.emit(SocketEvent.Error, `Couldn't find room: (${roomID})`);
     return;
   }
-  const articles = await getRandomArticles(
-    room.players.length * ARTICLES_PER_PLAYER
-  );
+  // const articles = await getRandomArticles(
+  //   room.players.length * ARTICLES_PER_PLAYER
+  // );
 
   // Initialize each player's status
-  room.expand?.players.forEach((player) =>
-    playersPB.update(player.id, {
-      score: 0,
-      articles: articles.splice(0, ARTICLES_PER_PLAYER),
-    })
-  );
-  roomsPB.update(room.id, {
-    round: 1,
-    guessee: getRandomElement(room.players),
+  // room.expand?.players
+  //   .filter((player) => player.article && player.article.length > 0)
+  //   .forEach((player) =>
+  //     playersPB.update(player.id, {
+  //       article: articles.splice(0, 1).map((article) => article.id),
+  //       articles: articles
+  //         .splice(0, ARTICLES_PER_PLAYER - 1)
+  //         .map((article) => article.id),
+  //     })
+  //   );
+  await roomsPB.update(room.id, {
+    stage: Stage.Researching,
+    guessee: getRandomElement(
+      room.players.filter((id) => id !== room.guesser && id != room.guessee)
+    ),
   });
 
-  // socket.emit(SocketEvent.Started, []);
-  room.expand?.players
-    .filter((player) => player.id !== room.guesser)
-    .forEach(
-      (member, i) => {}
-      // socket.to(member.id).emit(SocketEvent.Started, chunks[i])
-    );
+  socket.to(player.room).emit(SocketEvent.Update, await getRoom(room.id));
+  socket.emit(SocketEvent.Update, await getRoom(room.id));
 }
 
 /**
@@ -209,7 +217,7 @@ async function joinRoom(socket: Socket, id: PlayerID, roomID: RoomID) {
     return;
   }
 
-  if (room.round > 0 && !room.players.includes(id)) {
+  if (room.stage > 0 && !room.players.includes(id)) {
     socket.emit(
       SocketEvent.Error,
       `Couldn't join room ${room.code} (game is already in progress)`
@@ -220,9 +228,14 @@ async function joinRoom(socket: Socket, id: PlayerID, roomID: RoomID) {
   if (!room.players.includes(id)) {
     await roomsPB.update(room.id, {
       players: [id, ...room.players],
-      guesser: room.guesser ?? id,
+      guesser: room.guesser === "" ? id : room.guesser,
     });
-    await playersPB.update(player.id, { room: room.id });
+    const articles = await getRandomArticles(ARTICLES_PER_PLAYER);
+    await playersPB.update(player.id, {
+      room: room.id,
+      articles: articles.splice(1).map((article) => article.id),
+      article: articles.at(0)?.id,
+    });
   }
 
   await socket.join([id, roomID]);
@@ -243,7 +256,7 @@ async function kickFromRoom(server: Server, id: PlayerID) {
   await playersPB.update(id, {
     score: 0,
     article: "",
-    articles: "",
+    articles: [],
     room: "",
   });
   server.in(player.id).socketsLeave(player.room);
@@ -279,13 +292,123 @@ async function kickFromRoom(server: Server, id: PlayerID) {
   server.to(player.id).emit(SocketEvent.Update, undefined);
 }
 
+async function makeGuess(socket: Socket, id: PlayerID) {
+  const player = await getPlayer(id);
+  if (!player || !player.room) {
+    socket.emit(
+      SocketEvent.Error,
+      `Couldn't guess player ${id} (invalid player)`
+    );
+    return;
+  }
+
+  if (id === player.expand?.room.guessee) {
+    // If the guess is correct, guesser + guessee get 1 point each
+    const guesser = await getPlayer(player.expand.room.guesser);
+    if (!guesser) {
+      socket.emit(
+        SocketEvent.Error,
+        `Couldn't award points to guesser ${player.expand.room.guesser} (invalid player)`
+      );
+      return;
+    }
+    await playersPB.update(player.id, {
+      score: player.score + 1,
+      article: "",
+    });
+    await playersPB.update(guesser.id, {
+      score: guesser.score + 1,
+    });
+  } else {
+    await playersPB.update(player.id, {
+      score: player.score + 2,
+    });
+    const guessee = await getPlayer(player.expand?.room.guessee);
+    if (!guessee) {
+      socket.emit(
+        SocketEvent.Error,
+        `Couldn't clear article from guessee ${player.expand?.room.guessee} (invalid player)`
+      );
+      return;
+    }
+    await playersPB.update(guessee.id, {
+      article: "",
+    });
+  }
+
+  if (!player.expand?.room.guesser) {
+    socket.emit(
+      SocketEvent.Error,
+      `Couldn't assign new articles to guesser ${player.expand?.room.guesser} (invalid player)`
+    );
+    return;
+  }
+  const articles = await getRandomArticles(ARTICLES_PER_PLAYER);
+  await playersPB.update(player.expand?.room.guesser, {
+    articles: articles.splice(1).map((article) => article.id),
+    article: articles.at(0)?.id,
+  });
+
+  await roomsPB.update(player.room, {
+    stage: Stage.Lobby,
+    guesser: player.expand?.room.guessee,
+  });
+
+  socket.to(player.room).emit(SocketEvent.Update, await getRoom(player.room));
+  socket.emit(SocketEvent.Update, await getRoom(player.room));
+}
+
+async function skipArticleForPlayer(socket: Socket, id: PlayerID) {
+  const player = await getPlayer(id);
+  if (!player || !player.room) {
+    socket.emit(
+      SocketEvent.Error,
+      `Couldn't skip article for player ${id} (invalid player)`
+    );
+    return;
+  }
+
+  if (!player.articles || player.articles?.length === 0) {
+    socket.emit(
+      SocketEvent.Error,
+      `Couldn't skip article for player ${id} (no remaining articles)`
+    );
+    return;
+  }
+
+  await playersPB.update(id, {
+    articles: player.articles.splice(1),
+    article: player.articles.at(0),
+  });
+
+  socket.emit(SocketEvent.Update, await getRoom(player.room));
+}
+
+async function lockIn(socket: Socket, id: RoomID) {
+  const room = await getRoom(id);
+  if (!room) {
+    socket.emit(
+      SocketEvent.Error,
+      `Couldn't lock in room ${id} (invalid room)`
+    );
+    return;
+  }
+  await roomsPB.update(room.id, { stage: Stage.Guessing });
+  room.expand?.players.forEach((player) =>
+    playersPB.update(player.id, { articles: [] })
+  );
+
+  socket.to(id).emit(SocketEvent.Update, await getRoom(id));
+  socket.emit(SocketEvent.Update, await getRoom(id));
+}
+
 async function leaveRoom(socket: Socket, id: PlayerID) {
   const player = await getPlayer(id);
   if (!player || !player.room || !player.expand?.room.code) return;
   await playersPB.update(id, {
     score: 0,
     article: "",
-    articles: "",
+    articles: [],
     room: "",
   });
   await socket.leave(player.room);
@@ -317,9 +440,7 @@ async function leaveRoom(socket: Socket, id: PlayerID) {
     // Tell everyone to leave
   }
 
-  socket
-    .to(player.expand?.room.code)
-    .emit(SocketEvent.Update, await getRoom(player.room));
+  socket.to(player.room).emit(SocketEvent.Update, await getRoom(player.room));
   socket.emit(SocketEvent.Update, undefined);
 }
 
@@ -334,11 +455,26 @@ export default {
       console.info(`✶ [${socket.id}] ${SocketEvent.Connection}`);
 
       socket.prependAnyOutgoing((event, ...args) =>
-        console.info(`↗ [${socket.id}] ${event}`, args)
+        console.info(`⤴️ [${socket.id}] ${event}`, args)
       );
       socket.prependAny((event, ...args) => {
-        console.info(`↘ [${socket.id}] ${event}`, args);
+        console.info(`⤵️ [${socket.id}] ${event}`, args);
       });
+
+      socket.on(
+        SocketEvent.LockIn,
+        async (id: RoomID) => await lockIn(socket, id)
+      );
+
+      socket.on(
+        SocketEvent.SkipArticle,
+        async (id: PlayerID) => await skipArticleForPlayer(socket, id)
+      );
+
+      socket.on(
+        SocketEvent.Guess,
+        async (id: PlayerID) => await makeGuess(socket, id)
+      );
 
       socket.on(
         SocketEvent.Update,
@@ -359,7 +495,7 @@ export default {
 
       socket.on(
         SocketEvent.Start,
-        async (roomID: string, id: string) =>
+        async (id: string, roomID: string) =>
           await startGame(socket, id, roomID)
       );
 
