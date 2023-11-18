@@ -2,6 +2,18 @@
 
 ![](static/logo.png)
 
+## Caveats
+
+- Wasted a lot of time missing a particular point of the socket.io documentation discussed [here](https://stackoverflow.com/a/45951980) relating to `socket.to(...)`
+
+## To Do
+
+- Show a little tool tip during the rounds that explains what each person should be doing
+  - "Confused? Click here to learn what your current roles and goals are – but make sure no one is looking over your shoulder!"
+- It should appear like each article is locked in as soon as it is displayed
+- Support "kicking" players as the host/guesser
+- Add a timer to the skip button (as a sort-of debounce mechanism);
+
 ## Requirements
 
 To run the server, you must configure a PocketBase instance and define `PUBLIC_POCKETBASE_URL` in `.env`.
