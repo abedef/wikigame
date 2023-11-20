@@ -94,8 +94,6 @@
     />
   </div>
 
-  {room?.stage}
-
   <main>
     {#if !room}
       <button on:click={host}>Host a Room</button>
@@ -166,6 +164,12 @@
 </div>
 
 <style>
+  iframe {
+    border-radius: 1rem;
+    box-shadow: rgba(0, 0, 0, 0.18) 0px 2px 8px;
+
+    min-height: 500px;
+  }
   h4.code {
     margin: 0;
   }
@@ -365,10 +369,6 @@
         display: flex;
         justify-content: space-between;
         align-items: flex-end;
-    }
-    iframe {
-        border-radius: 1rem;
-        box-shadow: rgba(0, 0, 0, 0.18) 0px 2px 4px;
     }
     div {
         position: absolute;
