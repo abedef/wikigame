@@ -41,47 +41,6 @@
 		</p>
 	</div>
 
-	<div class="border-line-soft mt-6 border-t pt-6">
-		{#if editingName}
-			<form
-				method="POST"
-				action="?/name"
-				class="flex flex-wrap items-center gap-2"
-				use:enhance={() =>
-					({ update }) => {
-						editingName = false;
-						return update({ reset: false });
-					}}
-			>
-				<label class="sr-only" for="name">{text.landing.yourName}</label>
-				<!-- svelte-ignore a11y_autofocus -->
-				<input
-					id="name"
-					name="name"
-					value={name}
-					maxlength={MAX_NAME_LENGTH}
-					required
-					autofocus
-					class="border-line bg-surface focus-visible:outline-accent min-w-0 flex-1 rounded-xl border
-						px-3 py-2 focus-visible:outline-2"
-				/>
-				<Button type="submit">{text.landing.save}</Button>
-			</form>
-		{:else}
-			<p class="text-muted">
-				{text.landing.youAre} <span class="text-ink font-semibold">{name}</span>.
-				<button
-					type="button"
-					class="hover:text-ink cursor-pointer underline underline-offset-4"
-					onclick={() => (editingName = true)}>{text.landing.change}</button
-				>
-			</p>
-		{/if}
-		{#if form?.nameError}
-			<p class="text-accent mt-2 text-sm">{form.nameError}</p>
-		{/if}
-	</div>
-
 	<!--
 		Joining comes first, and is the filled button. Room codes are built to be
 		read out loud — the alphabet drops U because it is heard as "you" — and a
@@ -90,7 +49,7 @@
 		code somebody just said. The label is a question so that anyone without one
 		knows to read past it rather than hunting for a code they do not have.
 	-->
-	<div class="mt-6 grid gap-4">
+	<div class="border-line-soft mt-6 grid gap-4 border-t pt-6">
 		<div>
 			<label for="code" class="mb-2 block font-semibold">{text.landing.haveCode}</label>
 			<form method="POST" action="?/join" class="flex gap-2" use:enhance>
@@ -128,6 +87,47 @@
 				<p class="text-accent mt-2 text-sm">{form.hostError}</p>
 			{/if}
 		</div>
+	</div>
+
+	<div class="mt-4">
+		{#if editingName}
+			<form
+				method="POST"
+				action="?/name"
+				class="flex flex-wrap items-center gap-2"
+				use:enhance={() =>
+					({ update }) => {
+						editingName = false;
+						return update({ reset: false });
+					}}
+			>
+				<label class="sr-only" for="name">{text.landing.yourName}</label>
+				<!-- svelte-ignore a11y_autofocus -->
+				<input
+					id="name"
+					name="name"
+					value={name}
+					maxlength={MAX_NAME_LENGTH}
+					required
+					autofocus
+					class="border-line bg-surface focus-visible:outline-accent min-w-0 flex-1 rounded-xl border
+						px-3 py-2 focus-visible:outline-2"
+				/>
+				<Button type="submit">{text.landing.save}</Button>
+			</form>
+		{:else}
+			<p class="text-muted text-sm">
+				{text.landing.youAre} <span class="text-ink font-semibold">{name}</span>.
+				<button
+					type="button"
+					class="hover:text-ink cursor-pointer underline underline-offset-4"
+					onclick={() => (editingName = true)}>{text.landing.change}</button
+				>
+			</p>
+		{/if}
+		{#if form?.nameError}
+			<p class="text-accent mt-2 text-sm">{form.nameError}</p>
+		{/if}
 	</div>
 
 	<!--

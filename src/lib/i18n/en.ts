@@ -54,7 +54,9 @@ export const en = {
 	},
 
 	landing: {
-		youAre: 'You are',
+		// Under the buttons, "You are X" is a non-sequitur; saying what the name is
+		// for explains why it is on the page at all.
+		youAre: "You'll join as",
 		change: 'Change',
 		yourName: 'Your name',
 		save: 'Save',
