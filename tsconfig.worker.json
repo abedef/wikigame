@@ -9,7 +9,9 @@
 		"moduleResolution": "bundler",
 		"lib": ["esnext"],
 		// Brings in the "cloudflare:test" module used by the test suite.
-		"types": ["@cloudflare/vitest-pool-workers/types"],
+		// vite/client for `import.meta.glob`, which test/one-game.test.ts uses to
+		// read source files: the suite runs inside workerd and has no filesystem.
+		"types": ["@cloudflare/vitest-pool-workers/types", "vite/client"],
 		"paths": {
 			"sveltekit-worker": ["./src/worker/sveltekit-worker.d.ts"]
 		},

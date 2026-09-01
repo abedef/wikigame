@@ -149,6 +149,18 @@ state is held in the object's SQLite storage and players are connected to it by 
 assert state. Cheating therefore requires compromising the Durable Object rather than the
 browser.
 
+**Two clients, one game.** The game is played on the website and inside a
+[Discord activity](https://docs.discord.com/developers/activities/overview). They differ in how
+a player arrives and in nothing thereafter: a room code and a signed cookie on the website, an
+activity instance and a Discord account within Discord, where the voice channel has already
+assembled the players and no code need be read aloud. A round is described once, in
+`Table.svelte`, which both clients render; the route files contain only the arrival. The
+arrangement is enforced rather than trusted, a test failing if a route reaches past `Table` for
+a stage of its own, and the stage names being typed such that adding one is a compilation error
+until every locale names it. It exists because the two interfaces were briefly maintained
+separately and diverged within the hour, the Discord client losing the control that abandons a
+stalled round.
+
 **Information model.** The secrecy of the game is structural rather than presentational.
 `RoomState`, defined in `src/lib/protocol.ts`, is broadcast identically to every player;
 `PrivateState` is constructed separately for each socket. The article text and the reader's
