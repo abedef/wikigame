@@ -8,8 +8,8 @@
 	"compatibility_date": "2026-08-01",
 	"vars": {
 		// Wikimedia asks API clients to identify themselves and give a contact
-		// route. Change this to point at your own deployment before going public.
-		"WIKIPEDIA_USER_AGENT": "LieToMe/0.1 (party game; https://github.com/; contact via repository)"
+		// route; the repository's issues are ours. Change it if you deploy a fork.
+		"WIKIPEDIA_USER_AGENT": "LieToMe/0.1 (https://github.com/abedef/wikigame)"
 	},
 	"durable_objects": {
 		"bindings": [{ "name": "ROOM", "class_name": "Room" }]

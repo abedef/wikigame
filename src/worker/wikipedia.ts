@@ -4,11 +4,12 @@ const RANDOM_SUMMARY = 'https://en.wikipedia.org/api/rest_v1/page/random/summary
 
 /**
  * Wikimedia asks that API clients identify themselves and give a way to be
- * contacted about misbehaving traffic. Override WIKIPEDIA_USER_AGENT with
- * something that points at your own deployment before running this in public.
+ * contacted about misbehaving traffic; the repository's issues are that route.
+ * If you run your own deployment, set WIKIPEDIA_USER_AGENT to point at yours
+ * instead, so traffic from it does not come back to this one.
  * https://foundation.wikimedia.org/wiki/Policy:Wikimedia_Foundation_User-Agent_Policy
  */
-const DEFAULT_USER_AGENT = 'LieToMe/0.1 (party game; https://github.com/; contact via repository)';
+const DEFAULT_USER_AGENT = 'LieToMe/0.1 (https://github.com/abedef/wikigame)';
 
 /**
  * Articles shorter than this have nothing in them to read, remember, or bluff

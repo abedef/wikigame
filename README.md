@@ -101,9 +101,11 @@ secrets are needed for the deploy step:
 `SESSION_SECRET` is deliberately not in that list. Worker secrets survive a deployment, so
 it stays whatever `wrangler secret put` last set it to and never has to travel through CI.
 
-Before running this anywhere public, change `WIKIPEDIA_USER_AGENT` in `wrangler.jsonc` to
-something that identifies your deployment and gives a contact route. Wikimedia
-[asks API clients to do this](https://foundation.wikimedia.org/wiki/Policy:Wikimedia_Foundation_User-Agent_Policy).
+`WIKIPEDIA_USER_AGENT` in `wrangler.jsonc` identifies this client to Wikimedia and points
+at this repository, whose issues are the contact route their
+[user-agent policy](https://foundation.wikimedia.org/wiki/Policy:Wikimedia_Foundation_User-Agent_Policy)
+asks for. If you deploy a fork, change it to point at yours, so traffic from your
+deployment does not lead back here.
 
 ## How it fits together
 
