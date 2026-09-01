@@ -16,7 +16,10 @@
 	"vars": {
 		// Wikimedia asks API clients to identify themselves and give a contact
 		// route; the repository's issues are ours. Change it if you deploy a fork.
-		"WIKIPEDIA_USER_AGENT": "CitationNeeded/0.1 (https://github.com/abedef/wikigame)"
+		"WIKIPEDIA_USER_AGENT": "CitationNeeded/0.1 (https://github.com/abedef/wikigame)",
+		// The hostname the game actually lives on. Every other domain the worker
+		// answers to redirects here, so pointing this somewhere else moves them all.
+		"CANONICAL_HOST": "citationneededgame.com"
 	},
 	"durable_objects": {
 		"bindings": [{ "name": "ROOM", "class_name": "Room" }]
@@ -33,6 +36,10 @@
 	"workers_dev": false,
 	"routes": [
 		{ "pattern": "citationneededgame.com", "custom_domain": true },
-		{ "pattern": "www.citationneededgame.com", "custom_domain": true }
+		{ "pattern": "www.citationneededgame.com", "custom_domain": true },
+		// Spare domains. They reach the worker only so that it can redirect them
+		// to CANONICAL_HOST; they never serve the game themselves.
+		{ "pattern": "citationneeded.ca", "custom_domain": true },
+		{ "pattern": "www.citationneeded.ca", "custom_domain": true }
 	]
 }

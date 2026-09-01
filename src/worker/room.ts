@@ -22,6 +22,8 @@ export type Env = {
 	ROOM: DurableObjectNamespace<Room>;
 	SESSION_SECRET: string;
 	WIKIPEDIA_USER_AGENT?: string;
+	/** The one hostname the game is served on. Everything else redirects to it. */
+	CANONICAL_HOST?: string;
 };
 
 type PlayerRow = {
