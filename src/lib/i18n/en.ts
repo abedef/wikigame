@@ -64,6 +64,26 @@ export const en = {
 		serverSilent: 'The game server is not answering. Try again in a moment.'
 	},
 
+	howItWorks: {
+		heading: 'How does it work?',
+		steps: [
+			{
+				title: 'You all draw an article',
+				body: 'Everyone except the guesser gets a random Wikipedia article. Redraw until you get one you could talk your way through.'
+			},
+			{
+				title: 'One of you gets to read it',
+				body: 'A single article is drawn from the pile. Only the person who picked it sees the text. Everyone else gets the title and nothing else.'
+			},
+			{
+				title: 'The guesser works out who',
+				body: 'They can ask the table anything. You will all insist you read it. Then they name the one they believe.'
+			}
+		],
+		kicker:
+			'The catch: the reader wants to be caught. They score with the guesser, so they are trying to be convincing — while everyone else is trying to sound exactly like them.'
+	},
+
 	room: {
 		label: 'Room',
 		withCode: (code: string) => `Room ${code}`,

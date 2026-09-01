@@ -115,4 +115,26 @@
 			<p class="text-accent text-sm">{form.codeError}</p>
 		{/if}
 	</div>
+
+	<!--
+		Below the controls on purpose. Most arrivals come from an invite link and
+		want to be in the room, not read about it; this is here for the host and
+		the curious. minmax(0,1fr) because a grid column is min-width:auto by
+		default and would refuse to shrink on a narrow screen.
+	-->
+	<section class="border-line-soft mt-8 border-t pt-6">
+		<h2 class="wiki-heading text-xl">{text.howItWorks.heading}</h2>
+		<ol class="mt-4 grid gap-4">
+			{#each text.howItWorks.steps as step, index (step.title)}
+				<li class="grid grid-cols-[auto_minmax(0,1fr)] gap-3">
+					<span class="text-muted font-serif text-xl leading-tight">{index + 1}.</span>
+					<span class="min-w-0">
+						<span class="font-semibold">{step.title}</span>
+						<span class="text-muted mt-0.5 block text-sm">{step.body}</span>
+					</span>
+				</li>
+			{/each}
+		</ol>
+		<p class="text-muted mt-5 text-sm">{text.howItWorks.kicker}</p>
+	</section>
 </Card>
