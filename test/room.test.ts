@@ -162,7 +162,7 @@ describe('a round', () => {
 		expect(guessee.errors.at(-1)?.code).toBe('no-rerolls-left');
 	});
 
-	it('starts reading only once everyone has locked in', async () => {
+	it('gives everyone their own article to read, and tells nobody whose it is', async () => {
 		const code = nextCode();
 		const clients = await lobby(code);
 		send(clients[0], { type: 'start' });
@@ -178,15 +178,26 @@ describe('a round', () => {
 		send(guessees[1], { type: 'lock-in' });
 		await waitFor(() => clients[0].state!.stage === 'reading', 'reading');
 
-		const readers = clients.filter((c) => c.own!.reading);
-		expect(readers).toHaveLength(1);
-		expect(readers[0].id).not.toBe(clients[0].state!.guesserId);
-		expect(readers[0].own!.isReader).toBe(true);
-		// The title is common knowledge; who drew it, and what it says, are not.
-		expect(clients[0].state!.article!.title).toBe(readers[0].own!.reading!.title);
+		// Everybody reads, which is what stops the guesser spotting the one player
+		// who is actually reading something.
+		const reading = clients.filter((c) => c.own!.reading);
+		expect(reading).toHaveLength(guessees.length);
+		expect(reading.map((c) => c.id)).not.toContain(clients[0].state!.guesserId);
+
+		// And each of them reads a different one: their own.
+		const titles = reading.map((c) => c.own!.reading!.title);
+		expect(new Set(titles).size).toBe(titles.length);
+		for (const client of reading) {
+			expect(client.own!.reading!.title).toBe(client.own!.candidate!.title);
+			expect(client.own!.reading!.extract.length).toBeGreaterThan(0);
+		}
+
+		// Nobody is told whether theirs is the one that will come up. If they were,
+		// everyone but the reader would stop reading.
+		expect(clients.filter((c) => c.own!.isReader)).toHaveLength(0);
+		expect(clients[0].state!.article).toBeNull();
 		expect(clients[0].state!.readerId).toBeNull();
 		expect(clients[0].state!.revealedArticle).toBeNull();
-		expect(clients.filter((c) => c.own!.isReader)).toHaveLength(1);
 	});
 });
 
@@ -203,15 +214,17 @@ async function playToQuestioning(code: string, settings?: Record<string, number>
 	for (const client of guessees) send(client, { type: 'lock-in' });
 	await waitFor(() => clients[0].state!.stage === 'reading', 'reading');
 
-	const reader = clients.find((c) => c.own!.isReader)!;
-	send(reader, { type: 'done-reading' });
+	// Nobody knows who the reader is until the questioning starts, so everyone
+	// has to finish before it can.
+	for (const client of guessees) send(client, { type: 'done-reading' });
 	await waitFor(() => clients[0].state!.stage === 'questioning', 'questioning');
 
+	const reader = clients.find((c) => c.own!.isReader)!;
 	return { clients, guesser, reader, bluffer: guessees.find((c) => c.id !== reader.id)! };
 }
 
 describe('questioning and scoring', () => {
-	it('only lets the reader end the reading early', async () => {
+	it('waits for everyone to finish reading before the questions start', async () => {
 		const code = nextCode();
 		const clients = await lobby(code);
 		send(clients[0], { type: 'start' });
@@ -221,10 +234,20 @@ describe('questioning and scoring', () => {
 		for (const client of guessees) send(client, { type: 'lock-in' });
 		await waitFor(() => clients[0].state!.stage === 'reading', 'reading');
 
-		const notReader = clients.find((c) => !c.own!.isReader)!;
-		send(notReader, { type: 'done-reading' });
+		// One fast reader must not cut the clock short on everybody else.
+		send(guessees[0], { type: 'done-reading' });
 		await tick(100);
 		expect(clients[0].state!.stage).toBe('reading');
+		expect(guessees[0].own!.doneReading).toBe(true);
+		expect(guessees[1].own!.doneReading).toBe(false);
+
+		send(guessees[1], { type: 'done-reading' });
+		await waitFor(() => clients[0].state!.stage === 'questioning', 'questioning');
+
+		// The title is common knowledge now, and only now.
+		expect(clients[0].state!.article!.title.length).toBeGreaterThan(0);
+		expect(clients.filter((c) => c.own!.isReader)).toHaveLength(1);
+		expect(clients[0].state!.readerId).toBeNull();
 	});
 
 	it('lets only the guesser name a reader', async () => {

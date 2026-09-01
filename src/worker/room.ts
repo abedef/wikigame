@@ -210,6 +210,7 @@ export class Room extends DurableObject<Env> {
 		const article = this.readMeta<Article | null>('article', null);
 		const readingEndsAt = this.readMeta<number | null>('reading_ends_at', null);
 		const revealed = stage === 'reveal' || stage === 'finished';
+		const done = this.doneReaders();
 
 		const players: PublicPlayer[] = this.players().map((player) => ({
 			id: player.id,
@@ -218,7 +219,8 @@ export class Room extends DurableObject<Env> {
 			connected: connected.has(player.id),
 			isHost: player.is_host === 1,
 			ready: player.ready === 1,
-			lockedIn: player.locked_in === 1
+			lockedIn: player.locked_in === 1,
+			doneReading: done.has(player.id)
 		}));
 
 		return {
@@ -228,10 +230,12 @@ export class Room extends DurableObject<Env> {
 			round: this.readMeta<number>('round', 0),
 			settings: this.settings,
 			guesserId: this.readMeta<string | null>('guesser_id', null),
-			// The title becomes common knowledge the moment reading starts; the text
-			// does not, until the round is over.
+			// The title is announced when the questioning starts, not before. While
+			// everyone is still reading, knowing which article was drawn would tell
+			// each player whether theirs was picked, and the bluffers would stop.
+			// The text stays private until the round is over.
 			article:
-				article && stage !== 'lobby' && stage !== 'picking'
+				article && (stage === 'questioning' || revealed)
 					? { title: article.title, description: article.description }
 					: null,
 			readingMsLeft:
@@ -252,16 +256,21 @@ export class Room extends DurableObject<Env> {
 		const isReader = this.readMeta<string | null>('reader_id', null) === playerId;
 
 		return {
-			// While picking you may weigh up your own article, but you do not get to
-			// read it. Only the drawn reader reads.
+			// While picking you weigh up your own article on its title alone; the
+			// text comes later, when everybody reads.
 			candidate: candidate ? { title: candidate.title, description: candidate.description } : null,
 			rerollsLeft: Math.max(0, this.settings.rerolls - (player?.rerolls_used ?? 0)),
 			lockedIn: player?.locked_in === 1,
-			reading:
-				this.stage === 'reading' && isReader
-					? this.readMeta<Article | null>('article', null)
-					: null,
-			isReader: isReader && this.stage !== 'lobby' && this.stage !== 'picking'
+			// Your own article, whether or not it turns out to be the one asked
+			// about. Not knowing is the point: it is what keeps everyone reading,
+			// and it means the guesser cannot simply watch for the one person who
+			// is actually reading something.
+			reading: this.stage === 'reading' ? candidate : null,
+			doneReading: this.doneReaders().has(playerId),
+			// Withheld until the questioning. During the reading nobody knows.
+			isReader:
+				isReader &&
+				(this.stage === 'questioning' || this.stage === 'reveal' || this.stage === 'finished')
 		};
 	}
 
@@ -507,6 +516,7 @@ export class Room extends DurableObject<Env> {
 		this.writeMeta('guess_id', null);
 		this.writeMeta('awards', null);
 		this.writeMeta('reading_ends_at', null);
+		this.writeMeta('done_reading', []);
 		this.ctx.storage.sql.exec(
 			'UPDATE players SET candidate = NULL, rerolls_used = 0, locked_in = 0, ready = 0'
 		);
@@ -623,16 +633,38 @@ export class Room extends DurableObject<Env> {
 		await this.rescheduleAlarm();
 	}
 
-	/** Only the reader may cut the clock short, and only their own clock. */
+	private doneReaders(): Set<string> {
+		return new Set(this.readMeta<string[]>('done_reading', []));
+	}
+
+	/**
+	 * A player saying they have finished with their own article. The questioning
+	 * starts early only once everyone still connected has said so — one fast
+	 * reader must not cut the clock on everybody else.
+	 */
 	private doneReading(playerId: string): void {
 		if (this.stage !== 'reading') return;
-		if (this.readMeta<string | null>('reader_id', null) !== playerId) return;
-		this.beginQuestioning();
+
+		const player = this.player(playerId);
+		if (!player || !player.candidate) return;
+		if (player.id === this.readMeta<string | null>('guesser_id', null)) return;
+
+		const done = this.doneReaders();
+		if (done.has(playerId)) return;
+		done.add(playerId);
+		this.writeMeta('done_reading', [...done]);
+
+		const connected = this.connectedIds();
+		const waiting = this.guessees().filter((other) => connected.has(other.id));
+		if (waiting.every((other) => done.has(other.id))) return this.beginQuestioning();
+
+		this.broadcast();
 	}
 
 	private beginQuestioning(): void {
 		this.writeMeta('stage', 'questioning' satisfies Stage);
 		this.writeMeta('reading_ends_at', null);
+		this.writeMeta('done_reading', []);
 		this.broadcast();
 	}
 

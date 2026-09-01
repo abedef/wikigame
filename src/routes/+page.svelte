@@ -28,12 +28,12 @@
 	</div>
 
 	<p class="border-line-soft mt-6 border-t pt-6 leading-relaxed">
-		{text.landing.pitchBefore}
+		{text.meta.needsBefore}
 		<!-- The marker has to stay welded to the word it annotates; on a narrow
 		     screen it otherwise wraps onto a line of its own and stops reading as
 		     a footnote at all. -->
 		<span class="whitespace-nowrap"
-			>{text.landing.pitchLastWord}<sup class="text-accent ml-0.5 text-[0.7em]">{text.brand}</sup
+			>{text.meta.needsLastWord}<sup class="text-accent ml-0.5 text-[0.7em]">{text.brand}</sup
 			></span
 		>
 	</p>

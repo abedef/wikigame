@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { t } from '$lib/i18n';
 	import Button from '$lib/Button.svelte';
 	import type { GameConnection } from '$lib/game-connection.svelte';
+	import { t } from '$lib/i18n';
 	import ArticleHeading from './ArticleHeading.svelte';
 
 	let { connection }: { connection: GameConnection } = $props();
@@ -9,6 +9,12 @@
 	const text = t();
 	const room = $derived(connection.state);
 	const reading = $derived(connection.own.reading);
+	const done = $derived(connection.own.doneReading);
+	const stillReading = $derived(
+		(room?.players ?? []).filter(
+			(player) => player.id !== room?.guesserId && !player.doneReading && player.connected
+		).length
+	);
 
 	// The server sends how long was left when it sent the state; run it on from
 	// there locally rather than trusting the two clocks to agree.
@@ -44,8 +50,9 @@
 </div>
 
 {#if reading}
-	<p class="text-accent font-semibold">{text.reading.yoursLead}</p>
+	<p class="font-semibold">{text.reading.yoursLead}</p>
 	<p class="text-muted mt-1 mb-4 text-sm">{text.reading.yoursBody}</p>
+
 	<ArticleHeading article={reading} href={reading.url} />
 	<p class="mt-4 leading-relaxed">{reading.extract}</p>
 	<!-- Out to Wikipedia, not to a route in this app. -->
@@ -59,14 +66,17 @@
 		{text.reading.openFull}
 	</a>
 	<!-- eslint-enable svelte/no-navigation-without-resolve -->
+
 	<div class="mt-6">
-		<Button class="w-full" onclick={() => connection.send({ type: 'done-reading' })}>
-			{text.reading.doneReading}
-		</Button>
+		{#if done}
+			<p class="text-muted text-center text-sm">{text.reading.waitingOthers(stillReading)}</p>
+		{:else}
+			<Button class="w-full" onclick={() => connection.send({ type: 'done-reading' })}>
+				{text.reading.doneReading}
+			</Button>
+		{/if}
 	</div>
-{:else if room?.article}
-	<ArticleHeading article={room.article} />
-	<p class="text-muted mt-4">
-		{connection.isGuesser ? text.reading.guesserBody : text.reading.blufferBody}
-	</p>
+{:else}
+	<p class="font-semibold">{text.reading.guesserLead}</p>
+	<p class="text-muted mt-1">{text.reading.guesserBody}</p>
 {/if}

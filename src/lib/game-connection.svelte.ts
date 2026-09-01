@@ -28,12 +28,13 @@ function gameServerOrigin(): string {
 export class GameConnection {
 	state = $state<RoomState | null>(null);
 	/** The half of the state that is this player's alone: their candidate
-	 *  article, their redraw budget, and — if they are the reader — the text. */
+	 *  article, their redraw budget, and their own article while everyone reads. */
 	own = $state<PrivateState>({
 		candidate: null,
 		rerollsLeft: 0,
 		lockedIn: false,
 		reading: null,
+		doneReading: false,
 		isReader: false
 	});
 	/** When the last state arrived, so a countdown can run on from it locally. */

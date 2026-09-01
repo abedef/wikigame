@@ -54,6 +54,8 @@ export type PublicPlayer = {
 	ready: boolean;
 	/** Picking only: has this player settled on an article. */
 	lockedIn: boolean;
+	/** Reading only: has this player finished with their own article. */
+	doneReading: boolean;
 };
 
 export type RoomSettings = {
@@ -109,12 +111,18 @@ export type PrivateState = {
 	candidate: ArticleCard | null;
 	rerollsLeft: number;
 	lockedIn: boolean;
-	/** The article text. Sent only to the reader, and only while reading. */
-	reading: Article | null;
 	/**
-	 * Whether you are this round's reader. Told only to you, and only once the
-	 * reading has started, so you know which game you are playing during the
-	 * questioning without the room learning it too.
+	 * Your own article, in full, while reading. Everybody reads their own and
+	 * nobody is told whether theirs is the one that will be asked about, so the
+	 * room has no idle players for the guesser to spot.
+	 */
+	reading: Article | null;
+	/** Reading only: have you finished with your own article. */
+	doneReading: boolean;
+	/**
+	 * Whether the article being asked about is the one you read. Told only to
+	 * you, and not until the questioning starts — during the reading nobody
+	 * knows, which is what keeps everyone reading.
 	 */
 	isReader: boolean;
 };

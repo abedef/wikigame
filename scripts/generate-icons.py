@@ -112,6 +112,43 @@ SURFACE_LIGHT = '#f8f9fa'
 SURFACE_DARK = '#101418'
 
 
+# The link-preview card. Fonts differ between machines, so this needs a serif
+# and skips rather than shipping a card set in whatever the fallback happens to
+# be; the committed og.png is what actually gets served.
+SERIF_CANDIDATES = (
+    '/System/Library/Fonts/Supplemental/Georgia.ttf',
+    '/System/Library/Fonts/Supplemental/Times New Roman.ttf',
+    '/usr/share/fonts/truetype/liberation/LiberationSerif-Regular.ttf',
+    '/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf',
+)
+
+
+def og_card():
+    from PIL import ImageFont
+
+    path = next((p for p in SERIF_CANDIDATES if pathlib.Path(p).exists()), None)
+    if not path:
+        print('  og.png skipped: no serif font found')
+        return
+
+    W, H = 1200, 630
+    img = Image.new('RGB', (W, H), SURFACE_LIGHT)
+    draw = ImageDraw.Draw(img)
+    name = ImageFont.truetype(path, 104)
+    sub = ImageFont.truetype(path, 40)
+
+    title = '[citation needed]'
+    tw = draw.textbbox((0, 0), title, font=name)
+    draw.text(((W - (tw[2] - tw[0])) / 2 - tw[0], 232), title, font=name, fill='#202122')
+
+    line = 'A bluffing game played with random Wikipedia articles'
+    sw = draw.textbbox((0, 0), line, font=sub)
+    draw.text(((W - (sw[2] - sw[0])) / 2 - sw[0], 372), line, font=sub, fill='#54595d')
+
+    draw.rectangle([0, H - 10, W, H], fill='#3366cc')
+    img.save(STATIC / 'og.png')
+
+
 def main():
     paths = '\n'.join(f'\t<path d="{p}" />' for p in GLYPHS)
     STATIC.joinpath('favicon.svg').write_text(
@@ -130,6 +167,7 @@ def main():
     # Full bleed and inset, because the platform crops these to its own shape.
     render(192, rounded=False, scale=MASKABLE_SCALE).save(STATIC / 'icon-maskable-192.png')
     render(512, rounded=False, scale=MASKABLE_SCALE).save(STATIC / 'icon-maskable-512.png')
+    og_card()
     render(48).save(STATIC / 'favicon.png')
     render(64).save(STATIC / 'favicon.ico', sizes=[(16, 16), (32, 32), (48, 48)])
 

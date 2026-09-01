@@ -57,6 +57,10 @@
 						<span class="text-sm {player.ready ? 'text-accent font-semibold' : 'text-muted'}">
 							{player.ready ? text.players.ready : text.players.notReady}
 						</span>
+					{:else if room?.stage === 'reading' && !isGuesser}
+						<span class="text-sm {player.doneReading ? 'text-accent font-semibold' : 'text-muted'}">
+							{player.doneReading ? text.players.doneReading : text.players.reading}
+						</span>
 					{:else if room?.stage === 'picking' && !isGuesser}
 						<span class="text-sm {player.lockedIn ? 'text-accent font-semibold' : 'text-muted'}">
 							{player.lockedIn ? text.players.lockedIn : text.players.choosing}

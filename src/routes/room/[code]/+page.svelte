@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Card from '$lib/Card.svelte';
 	import Finished from '$lib/game/Finished.svelte';
+	import Help from '$lib/game/Help.svelte';
 	import Lobby from '$lib/game/Lobby.svelte';
 	import Picking from '$lib/game/Picking.svelte';
 	import PlayerList from '$lib/game/PlayerList.svelte';
@@ -60,6 +61,8 @@
 		<p class="text-muted text-center">{text.room.connectingTo(data.code)}</p>
 	</Card>
 {:else}
+	<Help {connection} />
+
 	<Card>
 		<header>
 			<!-- The line above the title and the rule under it are the shape of a

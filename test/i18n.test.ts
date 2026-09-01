@@ -38,8 +38,10 @@ describe('message catalogue', () => {
 	});
 
 	it('pluralises against the count rather than appending an s', () => {
-		expect(en.lobby.waitingForPlayers(1)).toContain('1 more player.');
-		expect(en.lobby.waitingForPlayers(2)).toContain('2 more players.');
+		expect(en.lobby.waitingForPlayers(1)).toContain('One more player');
+		expect(en.lobby.waitingForPlayers(2)).toContain('2 more players');
+		expect(en.reading.waitingOthers(1)).toContain('one more');
+		expect(en.reading.waitingOthers(2)).toContain('2 more');
 	});
 
 	it('joins tied winners as a list', () => {
