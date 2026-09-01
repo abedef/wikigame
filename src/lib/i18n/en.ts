@@ -165,7 +165,8 @@ export const en = {
 		yoursLead: "Here's your article. Read it!",
 		yoursBody:
 			"This might be the one everyone gets asked about. You won't know until the questions start, so make it count.",
-		openFull: 'Open the full article',
+		openFull: 'Read the full article',
+		closeFull: 'Close the article',
 		doneReading: "I'm done reading",
 		waitingOthers: (stillReading: number) =>
 			stillReading === 0

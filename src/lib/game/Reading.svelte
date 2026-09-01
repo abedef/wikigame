@@ -18,6 +18,8 @@
 
 	// The server sends how long was left when it sent the state; run it on from
 	// there locally rather than trusting the two clocks to agree.
+	let expanded = $state(false);
+
 	let now = $state(Date.now());
 	$effect(() => {
 		const tick = setInterval(() => (now = Date.now()), 250);
@@ -53,19 +55,33 @@
 	<p class="font-semibold">{text.reading.yoursLead}</p>
 	<p class="text-muted mt-1 mb-4 text-sm">{text.reading.yoursBody}</p>
 
-	<ArticleHeading article={reading} href={reading.url} />
+	<ArticleHeading article={reading} />
 	<p class="mt-4 leading-relaxed">{reading.extract}</p>
-	<!-- Out to Wikipedia, not to a route in this app. -->
-	<!-- eslint-disable svelte/no-navigation-without-resolve -->
-	<a
-		href={reading.url}
-		target="_blank"
-		rel="noreferrer"
-		class="text-accent mt-4 inline-block text-sm font-semibold underline underline-offset-4"
+
+	<!--
+		The rest of the article, served from our own origin with the links taken
+		out. It is read here rather than opened in a tab for two reasons: an
+		activity iframe cannot open one, and a reader who can follow links is
+		reading something other than the article everyone else will be asked
+		about. The sandbox grants neither scripts nor navigation, so the copy is
+		inert whatever the markup happens to contain.
+	-->
+	<button
+		type="button"
+		class="text-accent mt-4 cursor-pointer text-sm font-semibold underline underline-offset-4"
+		onclick={() => (expanded = !expanded)}
 	>
-		{text.reading.openFull}
-	</a>
-	<!-- eslint-enable svelte/no-navigation-without-resolve -->
+		{expanded ? text.reading.closeFull : text.reading.openFull}
+	</button>
+	{#if expanded}
+		<iframe
+			title={reading.title}
+			src="/api/article/{encodeURIComponent(reading.title)}"
+			sandbox=""
+			referrerpolicy="no-referrer"
+			class="border-line-soft mt-3 h-[55vh] w-full rounded-xl border bg-white dark:bg-transparent"
+		></iframe>
+	{/if}
 
 	<div class="mt-6">
 		{#if done}

@@ -12,7 +12,12 @@
 	const t = provideMessages(data.locale);
 </script>
 
-<div class="flex min-h-dvh flex-col items-center justify-center px-4 py-10">
+<!-- The padding keeps content clear of a phone's notch and home indicator when
+     this is running as a Discord activity. -->
+<div
+	class="flex min-h-dvh flex-col items-center justify-center px-4 py-10"
+	style="padding-top: calc(2.5rem + var(--safe-top)); padding-bottom: calc(2.5rem + var(--safe-bottom)); padding-left: calc(1rem + var(--safe-left)); padding-right: calc(1rem + var(--safe-right));"
+>
 	<main class="w-full max-w-lg">
 		{@render children()}
 	</main>

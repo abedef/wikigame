@@ -39,7 +39,8 @@
 	type="button"
 	aria-label={text.room.helpTitle}
 	onclick={() => dialog?.showModal()}
-	class="border-line bg-panel text-muted hover:text-ink hover:border-accent fixed top-3 right-3 z-20
+	style="top: calc(0.75rem + var(--safe-top)); right: calc(0.75rem + var(--safe-right));"
+	class="border-line bg-panel text-muted hover:text-ink hover:border-accent fixed z-20
 		h-9 w-9 cursor-pointer rounded-full border font-serif text-lg leading-none shadow-sm transition"
 >
 	?

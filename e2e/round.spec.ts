@@ -89,9 +89,16 @@ test('everyone reads their own article, and the guesser reads none', async ({ pa
 		// The guesser waits, and must not be shown anybody's article.
 		await expect(page.getByRole('button', { name: "I'm done reading" })).toBeHidden();
 	} else {
-		// A guessee gets their own, in full, with a way out to Wikipedia.
+		// A guessee gets their own, in full, and can open the rest of it in place.
 		await expect(page.getByText("Here's your article. Read it!")).toBeVisible();
-		await expect(page.getByRole('link', { name: 'Open the full article' })).toBeVisible();
+		const open = page.getByRole('button', { name: 'Read the full article' });
+		await expect(open).toBeVisible();
+
+		// It opens here rather than in a tab: an activity iframe cannot open one,
+		// and a reader who can follow links is reading something else.
+		await open.click();
+		await expect(page.locator('iframe')).toBeVisible();
+		await expect(page.getByRole('button', { name: 'Close the article' })).toBeVisible();
 	}
 });
 
