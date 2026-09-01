@@ -28,26 +28,20 @@
 			>
 				<span class="flex min-w-0 items-center gap-2">
 					<span class="truncate font-semibold">{player.name}</span>
+					<!-- Roles are set like the template the game is named after rather than as
+					     filled badges: narrower, so the name keeps the room, and of a piece
+					     with the [copy invite link] treatment elsewhere. shrink-0 keeps them
+					     whole so it is the name that truncates. -->
 					{#if player.id === connection.you}
-						<span class="text-muted text-sm">(you)</span>
+						<span class="text-muted shrink-0 text-sm">(you)</span>
 					{/if}
 					{#if isGuesser}
-						<span class="bg-accent text-accent-ink rounded-full px-2 py-0.5 text-xs font-bold">
-							Guesser
-						</span>
+						<span class="text-accent shrink-0 text-xs font-semibold">[guesser]</span>
 					{:else if isReader}
-						<span
-							class="border-accent text-accent rounded-full border px-2 py-0.5 text-xs font-bold"
-						>
-							Reader
-						</span>
+						<span class="text-accent shrink-0 text-xs font-semibold">[reader]</span>
 					{/if}
 					{#if player.isHost}
-						<span
-							class="border-line text-muted rounded-full border px-2 py-0.5 text-xs font-semibold"
-						>
-							Host
-						</span>
+						<span class="text-muted shrink-0 text-xs">[host]</span>
 					{/if}
 				</span>
 

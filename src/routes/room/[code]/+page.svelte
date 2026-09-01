@@ -1,5 +1,4 @@
 <script lang="ts">
-	import Button from '$lib/Button.svelte';
 	import Card from '$lib/Card.svelte';
 	import Finished from '$lib/game/Finished.svelte';
 	import Lobby from '$lib/game/Lobby.svelte';
@@ -45,13 +44,13 @@
 </script>
 
 <svelte:head>
-	<title>Room {data.code} — Lie to Me</title>
+	<title>Room {data.code} — [citation needed]</title>
 	<meta name="robots" content="noindex" />
 </svelte:head>
 
 {#if connection?.error && connection.status === 'closed'}
 	<Card>
-		<h1 class="text-xl font-bold">Can't join room {data.code}</h1>
+		<h1 class="wiki-heading text-2xl">Can't join room {data.code}</h1>
 		<p class="text-muted mt-2">{connection.error.message}</p>
 		<a
 			class="text-accent mt-4 inline-block font-semibold underline underline-offset-4"
@@ -66,9 +65,11 @@
 	</Card>
 {:else}
 	<Card>
-		<header class="flex flex-wrap items-start justify-between gap-4">
-			<div>
-				<p class="text-muted text-sm font-semibold tracking-widest uppercase">
+		<header>
+			<!-- The line above the title and the rule under it are the shape of a
+			     Wikipedia page; the invite sits where an [edit] link would. -->
+			<div class="flex items-baseline justify-between gap-4">
+				<p class="text-muted text-xs font-semibold tracking-widest uppercase">
 					{#if room.stage === 'lobby'}
 						Room
 					{:else if room.stage === 'finished'}
@@ -77,13 +78,17 @@
 						Round {room.round} of {room.settings.rounds}
 					{/if}
 				</p>
-				<h1 class="text-3xl font-black">{headings[room.stage] ?? room.stage}</h1>
+				{#if room.stage === 'lobby' && copyable}
+					<button
+						type="button"
+						onclick={copyInvite}
+						class="text-accent shrink-0 cursor-pointer text-sm underline underline-offset-4"
+					>
+						{copied ? '[link copied]' : '[copy invite link]'}
+					</button>
+				{/if}
 			</div>
-			{#if room.stage === 'lobby' && copyable}
-				<Button variant="secondary" onclick={copyInvite}>
-					{copied ? 'Link copied' : 'Copy invite link'}
-				</Button>
-			{/if}
+			<h1 class="wiki-heading mt-1 text-3xl">{headings[room.stage] ?? room.stage}</h1>
 		</header>
 
 		{#if room.stage === 'lobby'}

@@ -1,12 +1,12 @@
 {
-	"name": "Lie to Me",
-	"short_name": "Lie to Me",
-	"description": "A bluffing game played with Wikipedia articles.",
+	"name": "[citation needed]",
+	"short_name": "[citation needed]",
+	"description": "A bluffing game played with Wikipedia articles. Everyone claims they read it; one of them did.",
 	"start_url": "/",
 	"scope": "/",
 	"display": "standalone",
-	"background_color": "#fcf8f0",
-	"theme_color": "#fcf8f0",
+	"background_color": "#f8f9fa",
+	"theme_color": "#f8f9fa",
 	"icons": [
 		{
 			"src": "/favicon.svg",

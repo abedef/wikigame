@@ -11,7 +11,7 @@
 	const winners = $derived(standings.filter((player) => player.score === best));
 </script>
 
-<h2 class="text-2xl font-black">
+<h2 class="wiki-heading text-2xl">
 	{winners.length === 1
 		? `${winners[0].name} wins`
 		: `${winners.map((player) => player.name).join(' and ')} tie`}

@@ -15,6 +15,15 @@ export { Room };
 
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+		// A player is a cookie, and cookies set on the apex are not sent to www.
+		// Left alone, the two hosts would hand the same person two identities and
+		// a room could hold both. Settle on one host before anything else runs.
+		const url = new URL(request.url);
+		if (url.hostname.startsWith('www.')) {
+			url.hostname = url.hostname.slice(4);
+			return Response.redirect(url.toString(), 301);
+		}
+
 		const response = await handleApi(request, env);
 		if (response) return response;
 		return sveltekit.fetch(request, env, ctx);

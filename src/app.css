@@ -4,28 +4,34 @@
  * One palette, defined twice. Everything in the app refers to a role
  * (surface, ink, accent) rather than a colour, so the dark theme is a
  * redefinition here rather than a `dark:` class on every element.
+ *
+ * The values are Wikipedia's. Its interface is the thing the game is about,
+ * and borrowing the palette does more to set the scene than any amount of
+ * decoration would.
  */
 :root {
-	--surface: oklch(0.98 0.012 85);
-	--panel: oklch(1 0 0);
-	--ink: oklch(0.24 0.02 55);
-	--muted: oklch(0.52 0.02 55);
-	--line: oklch(0.89 0.012 75);
-	--accent: oklch(0.58 0.19 25);
-	--accent-ink: oklch(0.99 0.01 60);
-	--shadow: 0 1px 2px oklch(0.24 0.02 55 / 0.07), 0 8px 24px oklch(0.24 0.02 55 / 0.08);
+	--surface: #f8f9fa;
+	--panel: #ffffff;
+	--ink: #202122;
+	--muted: #54595d;
+	--line: #a2a9b1;
+	--line-soft: #c8ccd1;
+	--accent: #3366cc;
+	--accent-ink: #ffffff;
+	--visited: #6b4ba1;
 }
 
 @media (prefers-color-scheme: dark) {
 	:root {
-		--surface: oklch(0.19 0.014 60);
-		--panel: oklch(0.24 0.016 60);
-		--ink: oklch(0.94 0.008 80);
-		--muted: oklch(0.68 0.014 70);
-		--line: oklch(0.34 0.016 60);
-		--accent: oklch(0.7 0.16 30);
-		--accent-ink: oklch(0.18 0.02 40);
-		--shadow: 0 1px 2px oklch(0 0 0 / 0.3), 0 8px 24px oklch(0 0 0 / 0.35);
+		--surface: #101418;
+		--panel: #1b1e21;
+		--ink: #f8f9fa;
+		--muted: #a2a9b1;
+		--line: #54595d;
+		--line-soft: #3c4145;
+		--accent: #7b9ae0;
+		--accent-ink: #101418;
+		--visited: #b5a3dd;
 	}
 }
 
@@ -35,9 +41,27 @@
 	--color-ink: var(--ink);
 	--color-muted: var(--muted);
 	--color-line: var(--line);
+	--color-line-soft: var(--line-soft);
 	--color-accent: var(--accent);
 	--color-accent-ink: var(--accent-ink);
-	--shadow-panel: var(--shadow);
+	--color-visited: var(--visited);
+
+	/*
+	 * Wikipedia's headings are Linux Libertine, falling back to whatever serif
+	 * the reader has. This is its own stack, not an approximation of it.
+	 */
+	--font-serif: 'Linux Libertine', 'Georgia', 'Times New Roman', Times, serif;
+
+	/*
+	 * A reference work has corners. Squaring the radius scale rebrands every
+	 * rounded-* already in the components without touching one of them.
+	 */
+	--radius-sm: 1px;
+	--radius-md: 2px;
+	--radius-lg: 2px;
+	--radius-xl: 2px;
+	--radius-2xl: 2px;
+	--radius-full: 2px;
 }
 
 html {
@@ -45,6 +69,17 @@ html {
 	color: var(--ink);
 	/* The room code is read out loud and typed in; keep digits unambiguous. */
 	font-variant-numeric: tabular-nums;
+}
+
+/*
+ * The rule under a heading is the single most recognisable thing about a
+ * Wikipedia page, and it costs one border.
+ */
+.wiki-heading {
+	font-family: var(--font-serif);
+	font-weight: 400;
+	border-bottom: 1px solid var(--line-soft);
+	padding-bottom: 0.25rem;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -9,7 +9,7 @@ const RANDOM_SUMMARY = 'https://en.wikipedia.org/api/rest_v1/page/random/summary
  * instead, so traffic from it does not come back to this one.
  * https://foundation.wikimedia.org/wiki/Policy:Wikimedia_Foundation_User-Agent_Policy
  */
-const DEFAULT_USER_AGENT = 'LieToMe/0.1 (https://github.com/abedef/wikigame)';
+const DEFAULT_USER_AGENT = 'CitationNeeded/0.1 (https://github.com/abedef/wikigame)';
 
 /**
  * Articles shorter than this have nothing in them to read, remember, or bluff

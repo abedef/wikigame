@@ -1,10 +1,10 @@
 <sub>_This article is about the party game. For the encyclopedia it draws its material from, see [Wikipedia](https://en.wikipedia.org)._</sub>
 
-# Lie to Me
+# [citation needed]
 
 <table align="right">
-<tr><th colspan="2">Lie to Me</th></tr>
-<tr><td><i>Also known as</i></td><td>The Bull$#!&^ing Game</td></tr>
+<tr><th colspan="2">[citation needed]</th></tr>
+<tr><td><i>Formerly</i></td><td>Lie to Me: The Bull$#!&^ing Game</td></tr>
 <tr><td><i>Genre</i></td><td>Social deduction, party</td></tr>
 <tr><td><i>Players</i></td><td>3–12</td></tr>
 <tr><td><i>Playing time</i></td><td>Variable; five rounds by default</td></tr>
@@ -15,10 +15,11 @@
 <tr><td><i>Source material</i></td><td>Wikipedia, drawn at random</td></tr>
 </table>
 
-**Lie to Me**, subtitled _The Bull$#!&^ing Game_, is a multiplayer social deduction game in
-which players attempt to convince one another that they have read a randomly selected
-Wikipedia article. It is played in a web browser by three to twelve participants, who
-supply the conversation themselves — in person or over a voice call — while the software
+**[citation needed]** is a multiplayer social deduction game in which players attempt to
+convince one another that they have read a randomly selected Wikipedia article. It takes its
+name from the Wikipedia template appended to an unsourced claim, which is the position every
+player at the table is in. The game is played in a web browser by three to twelve participants,
+who supply the conversation themselves — in person or over a voice call — while the software
 handles article selection, timing and scoring.
 
 The game is unusual among social deduction games in the alignment of its hidden role. The
@@ -127,6 +128,11 @@ PocketBase backend with Cloudflare Durable Objects, moves all game logic to the 
 completes the round loop. The rules described above were settled during that rewrite; earlier
 drafts had every player read a different article, which left all but one player's reading
 effort unused, and left the reader's alignment unspecified.
+
+The game was renamed from _Lie to Me: The Bull$#!&^ing Game_ to **[citation needed]** in
+September 2026 and moved to citationneededgame.com. The interface was restyled after
+Wikipedia's own at the same time, and the puzzle-globe logo — a Wikimedia trademark rather
+than a freely reusable asset — was dropped in favour of a wordmark.
 
 ## Architecture
 
@@ -283,5 +289,8 @@ their own deployment, so that traffic originating from it does not lead back her
 
 ## External links
 
-- [Play the game](https://wikigame.abed-ef.workers.dev)
+- [Play the game](https://citationneededgame.com)
 - [Source repository](https://github.com/abedef/wikigame)
+
+<sub>Not affiliated with, endorsed by, or connected to the Wikimedia Foundation. Article text
+comes from Wikipedia and is available under [CC BY-SA](https://creativecommons.org/licenses/by-sa/4.0/).</sub>

@@ -3,28 +3,22 @@
 
     pip install Pillow && python3 scripts/generate-icons.py
 
-static/favicon.png is the original hand-made 48px icon and is left alone; the
-geometry below was traced from it so the generated sizes match. Every other
-icon, including static/favicon.svg, is written from GLYPH, so the mark only
-ever has to be corrected in one place.
+Every icon, including static/favicon.svg, is written from GLYPHS, so the mark
+only ever has to be corrected in one place.
 """
 
 import json
-import math
 import pathlib
 from PIL import Image, ImageDraw
 
-# A serif capital L, matching the wordmark in static/logo.png. Coordinates are
-# on a 48-unit grid — the size of the original favicon — so its proportions
-# carry over unchanged.
-GLYPH = (
-    'M 13 12 H 26 V 14.35 '
-    'Q 22.2 14.6 21.8 17.9 V 33.8 '
-    'Q 21.8 36.7 25.2 36.9 H 29.0 '
-    'Q 32.4 35.8 34.0 31.5 L 35.5 32.0 '
-    'Q 35.0 35.6 35.2 38.6 H 13 V 36.3 '
-    'Q 16.5 36.2 17.5 33.6 V 17.9 '
-    'Q 17.1 14.6 13 14.35 Z'
+# The wordmark reduced to its brackets: the empty slot a citation goes in.
+# Two shapes rather than one, so each is filled separately. Coordinates are on
+# a 48-unit grid, the size of the original favicon.
+GLYPHS = (
+    # [
+    'M 11 10 H 20 V 13 H 14.4 V 35 H 20 V 38 H 11 Z',
+    # ]
+    'M 37 10 H 28 V 13 H 33.6 V 35 H 28 V 38 H 37 Z',
 )
 GRID = 48.0
 CORNER = 7.0 / GRID   # corner radius as a fraction of the tile, measured off the original
@@ -33,8 +27,8 @@ INK = (0, 0, 0, 255)
 SUPERSAMPLE = 8
 
 # Android crops a maskable icon to an arbitrary shape and only guarantees the
-# middle 80%. At full size the mark's corners reach 77.5% of the width, which
-# clears that by too little to trust, so maskable variants draw it smaller.
+# middle 80%, which the mark at full size does not clear by enough to trust,
+# so maskable variants draw it smaller.
 MASKABLE_SCALE = 0.82
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -60,11 +54,11 @@ def _tokens(d):
     return out
 
 
-def outline(steps=64):
-    """The path as a polygon. The mark is only ever filled, never stroked, so
-    a dense polyline is indistinguishable from the curves it replaces."""
+def outline(path, steps=64):
+    """One path as a polygon. The mark is only ever filled, never stroked, so
+    a dense polyline is indistinguishable from any curves it replaces."""
     pts, cur, start, i = [], (0.0, 0.0), (0.0, 0.0), 0
-    t = _tokens(GLYPH)
+    t = _tokens(path)
     while i < len(t):
         op = t[i]
         i += 1
@@ -100,46 +94,30 @@ def render(size, *, rounded=True, scale=1.0):
     else:
         draw.rectangle([0, 0, n - 1, n - 1], fill=TILE)
 
-    pts = outline()
+    shapes = [outline(p) for p in GLYPHS]
     k = (n / GRID) * scale
-    # Centre the glyph's own bounding box, not the grid it was drawn on: the L
-    # sits slightly low and right of centre, which shows up once it is inset.
-    xs = [p[0] for p in pts]
-    ys = [p[1] for p in pts]
+    # Centre the mark's own bounding box, not the grid it was drawn on, so the
+    # inset variants stay centred rather than drifting with the grid.
+    xs = [x for shape in shapes for x, _ in shape]
+    ys = [y for shape in shapes for _, y in shape]
     ox = (n - (max(xs) - min(xs)) * k) / 2 - min(xs) * k
     oy = (n - (max(ys) - min(ys)) * k) / 2 - min(ys) * k
-    draw.polygon([(ox + x * k, oy + y * k) for x, y in pts], fill=INK)
+    for shape in shapes:
+        draw.polygon([(ox + x * k, oy + y * k) for x, y in shape], fill=INK)
     return img.resize((size, size), Image.LANCZOS)
 
 
-def oklch_to_hex(lightness, chroma, hue):
-    """The palette in src/app.css is authored in OKLCH; a web manifest and a
-    theme-color meta tag both need hex."""
-    a = chroma * math.cos(math.radians(hue))
-    b = chroma * math.sin(math.radians(hue))
-    l_ = (lightness + 0.3963377774 * a + 0.2158037573 * b) ** 3
-    m_ = (lightness - 0.1055613458 * a - 0.0638541728 * b) ** 3
-    s_ = (lightness - 0.0894841775 * a - 1.2914855480 * b) ** 3
-    rgb = (
-        4.0767416621 * l_ - 3.3077115913 * m_ + 0.2309699292 * s_,
-        -1.2684380046 * l_ + 2.6097574011 * m_ - 0.3413193965 * s_,
-        -0.0041960863 * l_ - 0.7034186147 * m_ + 1.7076147010 * s_,
-    )
-    def channel(u):
-        u = max(0.0, min(1.0, u))
-        u = 1.055 * u ** (1 / 2.4) - 0.055 if u > 0.0031308 else 12.92 * u
-        return max(0, min(255, round(u * 255)))
-    return '#%02x%02x%02x' % tuple(channel(c) for c in rgb)
+# Mirrors --surface in src/app.css, so the manifest and the page agree.
+SURFACE_LIGHT = '#f8f9fa'
+SURFACE_DARK = '#101418'
 
 
 def main():
-    surface_light = oklch_to_hex(0.98, 0.012, 85)
-    surface_dark = oklch_to_hex(0.19, 0.014, 60)
-
+    paths = '\n'.join(f'\t<path d="{p}" />' for p in GLYPHS)
     STATIC.joinpath('favicon.svg').write_text(
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">\n'
         f'\t<rect width="48" height="48" rx="{CORNER * GRID:g}" fill="#fff" />\n'
-        f'\t<path d="{GLYPH.strip()}" />\n'
+        f'{paths}\n'
         '</svg>\n'
     )
 
@@ -152,17 +130,18 @@ def main():
     # Full bleed and inset, because the platform crops these to its own shape.
     render(192, rounded=False, scale=MASKABLE_SCALE).save(STATIC / 'icon-maskable-192.png')
     render(512, rounded=False, scale=MASKABLE_SCALE).save(STATIC / 'icon-maskable-512.png')
+    render(48).save(STATIC / 'favicon.png')
     render(64).save(STATIC / 'favicon.ico', sizes=[(16, 16), (32, 32), (48, 48)])
 
     STATIC.joinpath('manifest.webmanifest').write_text(json.dumps({
-        'name': 'Lie to Me',
-        'short_name': 'Lie to Me',
-        'description': 'A bluffing game played with Wikipedia articles.',
+        'name': '[citation needed]',
+        'short_name': '[citation needed]',
+        'description': 'A bluffing game played with Wikipedia articles. Everyone claims they read it; one of them did.',
         'start_url': '/',
         'scope': '/',
         'display': 'standalone',
-        'background_color': surface_light,
-        'theme_color': surface_light,
+        'background_color': SURFACE_LIGHT,
+        'theme_color': SURFACE_LIGHT,
         'icons': [
             {'src': '/favicon.svg', 'type': 'image/svg+xml', 'sizes': 'any'},
             {'src': '/icon-192.png', 'type': 'image/png', 'sizes': '192x192'},
@@ -172,7 +151,7 @@ def main():
         ],
     }, indent='\t') + '\n')
 
-    print(f'theme-color light {surface_light}  dark {surface_dark}')
+    print(f'theme-color light {SURFACE_LIGHT}  dark {SURFACE_DARK}')
     for f in sorted(STATIC.iterdir()):
         print(f'  {f.name:28} {f.stat().st_size:>7,} B')
 

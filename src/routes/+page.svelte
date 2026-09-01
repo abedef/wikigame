@@ -2,6 +2,7 @@
 	import { enhance } from '$app/forms';
 	import Button from '$lib/Button.svelte';
 	import Card from '$lib/Card.svelte';
+	import Wordmark from '$lib/Wordmark.svelte';
 	import { MAX_NAME_LENGTH } from '$lib/protocol';
 	import { ROOM_CODE_LENGTH } from '$lib/room-code';
 	import type { PageProps } from './$types';
@@ -13,23 +14,26 @@
 </script>
 
 <svelte:head>
-	<title>Lie to Me</title>
-	<meta name="description" content="A bluffing game played with Wikipedia articles." />
+	<title>[citation needed]</title>
+	<meta
+		name="description"
+		content="A bluffing game played with Wikipedia articles. Everyone claims they read it; one of them did."
+	/>
 </svelte:head>
 
 <Card>
-	<img
-		class="mx-auto block w-64 max-w-full dark:hidden"
-		src="/logo.png"
-		alt="Lie to Me: the bullshitting game"
-	/>
-	<img
-		class="mx-auto hidden w-64 max-w-full dark:block"
-		src="/logo-dark.png"
-		alt="Lie to Me: the bullshitting game"
-	/>
+	<div class="text-center">
+		<h1><Wordmark /></h1>
+		<p class="text-muted mt-3 font-serif">The free bluffing game that anyone can play.</p>
+	</div>
 
-	<div class="border-line mt-8 border-t pt-6">
+	<p class="border-line-soft mt-6 border-t pt-6 leading-relaxed">
+		Everyone at the table claims they read the article. One of them actually did.<sup
+			class="text-accent ml-0.5 text-[0.7em]">[citation needed]</sup
+		>
+	</p>
+
+	<div class="border-line-soft mt-6 border-t pt-6">
 		{#if editingName}
 			<form
 				method="POST"

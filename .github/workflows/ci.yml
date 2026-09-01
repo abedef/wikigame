@@ -41,7 +41,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: production
-      url: https://wikigame.abed-ef.workers.dev
+      url: https://citationneededgame.com
     steps:
       - uses: actions/checkout@v7
 
