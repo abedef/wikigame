@@ -1,45 +1,201 @@
+<sub>_This article is about the party game. For the encyclopedia it draws its material from, see [Wikipedia](https://en.wikipedia.org)._</sub>
+
 # Lie to Me
 
-A bluffing game played over a voice call with a Wikipedia article nobody chose on purpose.
+<table align="right">
+<tr><th colspan="2">Lie to Me</th></tr>
+<tr><td><i>Also known as</i></td><td>The Bull$#!&^ing Game</td></tr>
+<tr><td><i>Genre</i></td><td>Social deduction, party</td></tr>
+<tr><td><i>Players</i></td><td>3–12</td></tr>
+<tr><td><i>Playing time</i></td><td>Variable; five rounds by default</td></tr>
+<tr><td><i>Setup time</i></td><td>None</td></tr>
+<tr><td><i>Random chance</i></td><td>High (article and reader selection)</td></tr>
+<tr><td><i>Skills</i></td><td>Bluffing, deduction, improvisation</td></tr>
+<tr><td><i>Materials</i></td><td>A web browser; a voice channel</td></tr>
+<tr><td><i>Source material</i></td><td>Wikipedia, drawn at random</td></tr>
+</table>
 
-One player is the **guesser**. Everyone else draws random Wikipedia articles and locks one
-in. A single locked-in article is then drawn at random, and only the player who drew it —
-the **reader** — gets to read it. Everyone else sees the title and nothing more.
+**Lie to Me**, subtitled _The Bull$#!&^ing Game_, is a multiplayer social deduction game in
+which players attempt to convince one another that they have read a randomly selected
+Wikipedia article. It is played in a web browser by three to twelve participants, who
+supply the conversation themselves — in person or over a voice call — while the software
+handles article selection, timing and scoring.
 
-Then the guesser interrogates the table, and everyone claims they read it.
+The game is unusual among social deduction games in the alignment of its hidden role. The
+player who has genuinely read the article, termed the _reader_, is rewarded for being
+identified rather than for escaping detection, and scores jointly with the interrogating
+player. The remaining players, the _bluffers_, score by being mistaken for the reader. The
+resulting incentive is cooperative rather than evasive: every player at the table is trying
+to appear knowledgeable, and the reader's difficulty lies in demonstrating genuine
+familiarity without supplying material the bluffers can immediately repeat.
 
-**The reader wants to be found.** They score together with the guesser, so the reader's job
-is to prove genuine knowledge — while being careful, because everyone else is listening and
-will happily repeat whatever they say. A bluffer scores by being named instead.
+## Contents
+
+1. [Gameplay](#gameplay) — [Round structure](#round-structure) · [Scoring](#scoring) · [Strategy](#strategy) · [Configuration](#configuration)
+2. [History](#history)
+3. [Architecture](#architecture)
+4. [Installation and use](#installation-and-use)
+5. [See also](#see-also)
+6. [References](#references)
+7. [External links](#external-links)
+
+## Gameplay
+
+A game is played over a series of rounds. In each round exactly one player holds the role of
+_guesser_; every other player is a _guessee_. One guessee will, during the round, become the
+reader. Players join a room using a four-character code, drawn from an alphabet that omits
+the characters `I`, `O`, `U`, `0` and `1` so that codes can be read aloud without ambiguity.
+
+### Round structure
+
+Each round proceeds through four stages.
+
+1. **Picking.** Every guessee is dealt a random Wikipedia article, of which they are shown
+   only the title and Wikipedia's one-line description. A player may redraw a limited number
+   of times before settling on an article, but at no point during this stage may anyone read
+   the article itself. The guesser takes no part.
+2. **Reading.** One of the locked-in articles is selected at random. Its owner becomes the
+   reader and is shown the text; every other player, including the guesser, is shown only the
+   title. The reader may end the stage early once satisfied, and it otherwise expires on a
+   timer.
+3. **Questioning.** The guesser interrogates the table. Every guessee maintains that they
+   read the article. There is no time limit — the stage ends when the guesser names a player.
+4. **Reveal.** The reader's identity and the full article text are published to everyone,
+   points are awarded, and the player who was named becomes the guesser for the following
+   round.
+
+Because the article is chosen from the pool _before_ anyone reads it, a player's redraws
+matter whether or not their own article is ultimately selected. Only one player ever reads,
+so no reading effort is wasted on an article that does not come up.
+
+### Scoring
 
 | Outcome                      | Guesser | Reader | Named bluffer |
 | ---------------------------- | ------- | ------ | ------------- |
 | The guesser names the reader | +2      | +2     | —             |
 | The guesser names a bluffer  | 0       | 0      | +3            |
 
-Whoever was named takes the chair for the next round.
+The asymmetry is deliberate. A correct identification pays two players, while a successful
+bluff pays only one, and a bluffer must outperform both their rivals and the genuine reader
+to collect. The scheme avoids the degenerate equilibrium that arises if the reader is instead
+rewarded for concealment: in that variant the reader's optimal play is to underperform, and
+the guesser's optimal counter-play is to name the least convincing player, which inverts the
+game.
 
-Three players minimum, twelve maximum. The game supplies the article and the scoring; the
-talking happens wherever you already are.
+### Strategy
 
-## Running it locally
+The reader must convey enough detail to be believed while withholding anything distinctive
+enough to be echoed back, since the bluffers can hear every answer. For the same reason, the
+order in which the guesser questions the table is consequential; the player questioned last
+is widely held to have the easiest task.<sup>[_[citation needed](https://en.wikipedia.org/wiki/Wikipedia:Citation_needed)_]</sup>
 
-Requires Node 20+ and a Cloudflare account only if you intend to deploy.
+Article selection is drawn from `Special:Random` without curation, and the encyclopedia's
+random distribution is dominated by short articles on obscure settlements, taxa and
+sportspeople. The redraw budget is the mechanism by which players escape an article they
+could say nothing about. Since a player does not know in advance whether their article will
+be the one selected, and since the reader is rewarded for being recognised, players are
+incentivised to settle on subjects they could plausibly discuss.
+
+Articles that cannot support a round at all — disambiguation pages, list and index pages, and
+articles with no substantial prose — are excluded from the draw. This is a playability
+constraint rather than a curation of subject matter.
+
+### Configuration
+
+The host may adjust the following before a game begins. Settings are fixed for the duration
+of a game.
+
+| Setting      | Default | Range   | Effect                                     |
+| ------------ | ------- | ------- | ------------------------------------------ |
+| Rounds       | 5       | 1–20    | How many times the guesser's chair changes |
+| Redraws      | 8       | 0–30    | Redraws available to each player per round |
+| Reading time | 60s     | 15–180s | How long the reader has with the article   |
+
+A player who disconnects during the lobby forfeits their seat after a short grace period; a
+player who disconnects mid-game keeps it and may rejoin. The host may abandon a round that
+cannot be completed, in which case no points are awarded and the chair passes on.
+
+## History
+
+The game was first implemented in 2023 on a [PocketBase](https://pocketbase.io) backend. That
+version reached a working lobby but no completed round, and development stopped in November
+2023; it remains in the repository on the `master` branch. A second attempt was scaffolded in
+April 2025 and left unfinished.
+
+The present implementation dates from 2026 and shares no history with either. It replaces the
+PocketBase backend with Cloudflare Durable Objects, moves all game logic to the server, and
+completes the round loop. The rules described above were settled during that rewrite; earlier
+drafts had every player read a different article, which left all but one player's reading
+effort unused, and left the reader's alignment unspecified.
+
+## Architecture
+
+The application is a [SvelteKit](https://svelte.dev/docs/kit) front end and a
+[Cloudflare Worker](https://developers.cloudflare.com/workers/) back end, deployed together as
+a single worker.
+
+**Rooms.** Each room is one Durable Object, addressed by its room code.<sup>[[1]](#references)</sup>
+A Durable Object processes one request at a time, so the implementation requires no locks or
+transactions: two players locking in simultaneously are simply two messages in a queue. Room
+state is held in the object's SQLite storage and players are connected to it by WebSocket.
+
+**Authority.** Clients send intent — _lock in_, _I name Cleo_ — and receive state. They never
+assert state. Cheating therefore requires compromising the Durable Object rather than the
+browser.
+
+**Information model.** The secrecy of the game is structural rather than presentational.
+`RoomState`, defined in `src/lib/protocol.ts`, is broadcast identically to every player;
+`PrivateState` is constructed separately for each socket. The article text and the reader's
+identity exist only in the latter, so at no point does an unprivileged client hold data that
+would spoil the round.
+
+**Identity.** A player is an opaque identifier accompanied by an HMAC of it, held in a cookie
+and verified by the worker before a socket may act as that player. A player may discard their
+identity, but cannot assume another's. Display names are deliberately unsigned, being
+cosmetic and load-bearing for nothing.
+
+**Build configuration.** Two Wrangler configuration files exist. `wrangler.jsonc` is the
+operative one. `wrangler.build.jsonc` exists solely because `adapter-cloudflare` writes its
+generated worker to whatever path `main` names in the configuration file it reads,<sup>[[2]](#references)</sup>
+which would otherwise overwrite `src/worker/index.ts` — the real entry point, and the module
+that must re-export the `Room` class for the Durable Object binding to resolve. The adapter is
+therefore pointed at the build configuration instead.
+
+**Source layout.**
+
+```
+src/lib/protocol.ts        the wire contract, imported by both ends
+src/lib/server/identity.ts cookie signing and verification
+src/lib/game/              one component per stage of a round
+src/worker/room.ts         the durable object; all the rules live here
+src/worker/router.ts       the game API, in front of the durable object
+src/worker/wikipedia.ts    article selection
+src/worker/index.ts        production entry; wraps the SvelteKit worker
+src/worker/dev.ts          development sidecar; the API alone
+```
+
+## Installation and use
+
+Node 20.19 or later is required.<sup>[[3]](#references)</sup> Continuous integration uses
+Node 24.
 
 ```bash
 npm install
 ```
 
-Create the two env files. `SESSION_SECRET` signs the player identity cookie, and **the same
-value must appear in both** — the pages issue the token and the game server verifies it.
+Two environment files are needed. `SESSION_SECRET` signs the player identity cookie and **the
+same value must appear in both**, as the pages issue the token and the game server verifies
+it.
 
 ```bash
 cp .env.example .env && cp .dev.vars.example .dev.vars
 ```
 
-Put the output of `openssl rand -hex 32` into `SESSION_SECRET` in each.
+The output of `openssl rand -hex 32` is a suitable value.
 
-A durable object cannot run inside `vite dev`, so development takes two terminals:
+### Development
+
+A Durable Object cannot run inside `vite dev`, so development requires two processes.
 
 ```bash
 npm run dev
@@ -49,100 +205,76 @@ npm run dev
 npm run dev:server
 ```
 
-The first serves the pages on `localhost:5173` with hot reloading. The second runs the game
-server — the durable object — on `localhost:8787`, which the pages connect to over
-`PUBLIC_GAME_SERVER`. In production both are a single worker on a single origin, so that
-variable is left empty there.
-
-To exercise the production shape instead, with both halves in one worker:
+The first serves the pages on `localhost:5173` with hot reloading; the second runs the game
+server on `localhost:8787`, which the pages reach through `PUBLIC_GAME_SERVER`. In production
+the two are a single worker on a single origin and that variable is left empty. To run the
+production arrangement locally instead:
 
 ```bash
 npm run preview
 ```
 
-## Tests
+### Testing
 
 ```bash
 npm test
 ```
 
-The suite runs inside workerd, against the real durable object. Wikipedia is stubbed by an
-outbound service in `vitest.config.ts`, so the tests are deterministic and never touch the
-network.
+The suite executes inside workerd against the real Durable Object. Wikipedia is replaced by an
+outbound service defined in `vitest.config.ts`, making rounds deterministic and ensuring the
+tests never reach the network.
 
 ```bash
 npm run check
 ```
 
-Typechecks the SvelteKit app and the worker separately — they compile against different
-globals, so they have separate tsconfigs.
+This typechecks the SvelteKit application and the worker as separate projects, which is
+necessary because they compile against different global environments.
 
-## Deploying
+### Deployment
 
 ```bash
 npx wrangler secret put SESSION_SECRET
 npm run deploy
 ```
 
-Rotating that secret signs everyone out, which is harmless: they get a new identity and
-rejoin.
+Rotating that secret invalidates every player identity, which is harmless: players are issued
+new ones and rejoin.
 
 ### Continuous deployment
 
-`.github/workflows/ci.yml` typechecks, lints, tests and builds every push and pull request,
-and deploys to Cloudflare on a push to `main` — only if all of that passed. Two repository
-secrets are needed for the deploy step:
+`.github/workflows/ci.yml` typechecks, lints, tests and builds on every push and pull request,
+and deploys on a push to `main` if all of that succeeded. The deployment step requires two
+repository secrets.
 
-| Secret                  | Where it comes from                                                              |
-| ----------------------- | -------------------------------------------------------------------------------- |
-| `CLOUDFLARE_API_TOKEN`  | Cloudflare dashboard, My Profile, API Tokens, "Edit Cloudflare Workers" template |
-| `CLOUDFLARE_ACCOUNT_ID` | `npx wrangler whoami`                                                            |
+| Secret                  | Source                                                                     |
+| ----------------------- | -------------------------------------------------------------------------- |
+| `CLOUDFLARE_API_TOKEN`  | Cloudflare dashboard → My Profile → API Tokens → "Edit Cloudflare Workers" |
+| `CLOUDFLARE_ACCOUNT_ID` | `npx wrangler whoami`                                                      |
 
-`SESSION_SECRET` is deliberately not in that list. Worker secrets survive a deployment, so
-it stays whatever `wrangler secret put` last set it to and never has to travel through CI.
+`SESSION_SECRET` is deliberately absent. Worker secrets outlive a deployment, so it remains
+whatever `wrangler secret put` last set and never passes through continuous integration.
 
-`WIKIPEDIA_USER_AGENT` in `wrangler.jsonc` identifies this client to Wikimedia and points
-at this repository, whose issues are the contact route their
-[user-agent policy](https://foundation.wikimedia.org/wiki/Policy:Wikimedia_Foundation_User-Agent_Policy)
-asks for. If you deploy a fork, change it to point at yours, so traffic from your
-deployment does not lead back here.
+`WIKIPEDIA_USER_AGENT` in `wrangler.jsonc` identifies this client to the Wikimedia Foundation
+and points at this repository, whose issue tracker is the contact route their user-agent
+policy requires.<sup>[[4]](#references)</sup> Operators of a fork should change it to point at
+their own deployment, so that traffic originating from it does not lead back here.
 
-## How it fits together
+## See also
 
-**One durable object per room**, addressed by room code. A durable object handles one
-request at a time, which is why nothing here needs locks or transactions: two players
-locking in at the same instant are simply two messages in a queue. Room state lives in that
-object's SQLite storage, and players hold WebSockets to it.
+- [Balderdash](https://en.wikipedia.org/wiki/Balderdash) — bluffing with invented dictionary definitions
+- [Two truths and a lie](https://en.wikipedia.org/wiki/Two_truths_and_a_lie) — icebreaker built on the same detection problem
+- [Fibbage](https://en.wikipedia.org/wiki/The_Jackbox_Party_Pack) — a commercial party game in which players invent plausible facts
+- [Wikipedia:Random](https://en.wikipedia.org/wiki/Special:Random) — the source of every article in play
 
-**The server decides everything.** Clients send intent — "lock in", "I name Cleo" — and
-receive state. They never assert state. Cheating therefore means compromising the durable
-object rather than the browser.
+## References
 
-**Secrecy is structural, not cosmetic.** `RoomState` in `src/lib/protocol.ts` is broadcast
-identically to everyone, and `PrivateState` is built per socket. The article text and the
-reader's identity are only ever in the private half, so there is no version of the game
-where the answer is sitting in a client's memory waiting to be read out of devtools.
+1. ["Durable Objects"](https://developers.cloudflare.com/durable-objects/), Cloudflare Developer Documentation.
+2. ["Cloudflare adapter"](https://svelte.dev/docs/kit/adapter-cloudflare), SvelteKit documentation.
+3. ["Node.js support"](https://vite.dev/guide/migration), Vite documentation. The constraint originates with Vite, not this project.
+4. ["Wikimedia Foundation User-Agent Policy"](https://foundation.wikimedia.org/wiki/Policy:Wikimedia_Foundation_User-Agent_Policy), Wikimedia Foundation.
 
-**Identity is a signed cookie.** A player is an opaque id plus an HMAC of it. Nothing stops
-someone discarding their identity, but nobody can claim someone else's. Display names are
-deliberately unsigned — they are cosmetic and nothing is authorised on the strength of one.
+## External links
 
-### The two wrangler configs
-
-`wrangler.jsonc` is the real one. `wrangler.build.jsonc` exists only because
-`adapter-cloudflare` writes its generated worker to whatever `main` points at in the config
-it reads — which would overwrite `src/worker/index.ts`, our actual entry point. The adapter
-is pointed at the build config instead, leaving `wrangler.jsonc` free to name the entry that
-re-exports the `Room` durable object alongside the SvelteKit handler.
-
-### Layout
-
-```
-src/lib/protocol.ts        the wire contract, imported by both ends
-src/lib/server/identity.ts cookie signing and verification
-src/lib/game/              one component per stage of a round
-src/worker/room.ts         the durable object: all the rules live here
-src/worker/router.ts       the game API, in front of the durable object
-src/worker/index.ts        production entry; wraps the SvelteKit worker
-src/worker/dev.ts          development sidecar; the API alone
-```
+- [Play the game](https://wikigame.abed-ef.workers.dev)
+- [Source repository](https://github.com/abedef/wikigame)
