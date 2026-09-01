@@ -23,10 +23,10 @@
 				onclick={pickable && !isGuesser
 					? () => connection.send({ type: 'guess', playerId: player.id })
 					: undefined}
-				class="border-line flex w-full items-center justify-between gap-3 rounded-xl border px-3 py-2
-					text-left {player.connected ? '' : 'opacity-45'}
-					{pickable && !isGuesser ? 'hover:border-accent cursor-pointer transition' : ''}
-					{isReader ? 'border-accent' : ''}"
+				class="flex w-full items-center justify-between gap-3 rounded-xl border px-3 py-2 text-left
+					{player.connected ? '' : 'opacity-45'}
+					{pickable && !isGuesser ? 'hover:border-accent active:bg-accent/10 cursor-pointer transition' : ''}
+					{isReader ? 'border-accent' : pickable && !isGuesser ? 'border-accent/50' : 'border-line'}"
 			>
 				<span class="flex min-w-0 items-center gap-2">
 					<span class="truncate font-semibold">{player.name}</span>
@@ -48,6 +48,9 @@
 				</span>
 
 				<span class="flex shrink-0 items-center gap-3">
+					{#if pickable && !isGuesser}
+						<span class="text-accent text-sm font-semibold">{text.players.pick}</span>
+					{/if}
 					{#if award}
 						<span class="text-accent text-sm font-bold">+{award}</span>
 					{/if}

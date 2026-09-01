@@ -107,6 +107,7 @@ export const en = {
 		stage: {
 			lobby: 'Lobby',
 			picking: 'Choosing articles',
+			pick: '[pick]',
 			reading: 'Reading',
 			questioning: 'Questioning',
 			reveal: 'Reveal',
@@ -226,6 +227,7 @@ export const en = {
 		notReady: 'Not ready',
 		choosing: 'Choosing',
 		lockedIn: 'Locked in',
+		pick: '[pick]',
 		reading: 'Reading',
 		doneReading: 'Done'
 	},
