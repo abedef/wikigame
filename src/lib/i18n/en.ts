@@ -35,16 +35,12 @@ export const en = {
 	brand: '[citation needed]',
 
 	meta: {
-		tagline:
-			"In a minute you'll be talking about an article you never opened. Try to sound like you did.",
-		// The hook, and the one thing that makes this different from every other
-		// bluffing game, so it goes above the fold rather than at the foot of the
-		// page where it started.
-		twist: "Here's the twist: if you really did read it, you want to get caught.",
-		// Says what you need before you can play, which nothing else on the page
-		// does, and lands the marker on a claim worth doubting.
+		tagline: 'A social deduction game played with whatever Wikipedia throws at you.',
+		// Says what you need before you can play, what you will be doing, and how
+		// long it takes to learn, and lands the marker on the last of those, which
+		// is the one worth doubting.
 		needsBefore:
-			"Grab two or more friends and a way to talk to each other. You'll pick the game up in about a",
+			"Grab two or more friends and a way to talk to each other. Your goal is to convince everyone you've read a random Wikipedia article you may never have heard of in your life, so I hope you've got a good poker face. You'll pick the game up in about a",
 		needsLastWord: 'minute.',
 		description:
 			'A quick social deduction game played with random Wikipedia articles. Everyone reads one, only one of them comes up, and you all have to claim you read that one.',
@@ -188,7 +184,7 @@ export const en = {
 			'Only one of them actually read this article. The rest read something completely different. Ask around until you think you know who really read it, then pick them.',
 		answerLead: 'Time to answer.',
 		readerBody:
-			'Lucky you, this is the one you read! Get the guesser to pick you and you both score. Careful though, everyone else is listening and will happily repeat whatever you say.',
+			'Lucky you, this is the one you read! Convince the guesser it was you and you both score. Careful though, everyone else is listening and will happily repeat whatever you say.',
 		blufferBody:
 			'You read a completely different article. Bad luck! Convince the guesser it was you who read this one anyway. Fool them and you get the points.',
 		waitingFor: (name: string) => `${name} is deciding.`
