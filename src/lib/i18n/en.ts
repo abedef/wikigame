@@ -83,7 +83,7 @@ export const en = {
 			}
 		],
 		kicker:
-			'Get picked when you really did read it and you and the guesser both take 2 points. Get picked when you were bluffing and you take 3 on your own. Either way, whoever got picked is the next guesser.'
+			"Getting picked is how you score, so your job is to convince the guesser it was you. What that's worth depends on whether you actually read it. If they pick you and you did, you and the guesser take 2 points each. If they pick you and you were bluffing, you take 3, all to yourself. Whoever got picked is the guesser next round."
 	},
 
 	room: {
