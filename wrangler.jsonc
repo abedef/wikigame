@@ -1,0 +1,26 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "wikigame",
+	// Our own entry point, which re-exports the Room durable object and delegates
+	// everything it does not handle to the SvelteKit worker.
+	"main": "src/worker/index.ts",
+	"compatibility_date": "2026-08-01",
+	"compatibility_flags": ["nodejs_als"],
+	"assets": {
+		"binding": "ASSETS",
+		"directory": ".svelte-kit/cloudflare"
+	},
+	// Lets src/worker/index.ts import the SvelteKit build by a stable name, so it
+	// typechecks against src/worker/sveltekit-worker.d.ts before any build exists.
+	"alias": { "sveltekit-worker": "./.svelte-kit/cloudflare/_worker.js" },
+	"vars": {
+		// Wikimedia asks API clients to identify themselves and give a contact
+		// route. Change this to point at your own deployment before going public.
+		"WIKIPEDIA_USER_AGENT": "LieToMe/0.1 (party game; https://github.com/; contact via repository)"
+	},
+	"durable_objects": {
+		"bindings": [{ "name": "ROOM", "class_name": "Room" }]
+	},
+	"migrations": [{ "tag": "v1", "new_sqlite_classes": ["Room"] }],
+	"observability": { "enabled": true }
+}

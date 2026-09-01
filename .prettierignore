@@ -4,3 +4,9 @@ pnpm-lock.yaml
 yarn.lock
 bun.lock
 bun.lockb
+
+# Generated
+worker-configuration.d.ts
+.wrangler
+.svelte-kit
+build

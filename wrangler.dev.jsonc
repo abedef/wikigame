@@ -1,0 +1,19 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	// Development-only sidecar. `vite dev` cannot host a durable object, so during
+	// development the game server runs here and the Vite-served pages connect to it
+	// over PUBLIC_GAME_SERVER. In production both live in one worker (wrangler.jsonc).
+	"name": "wikigame-dev-server",
+	"main": "src/worker/dev.ts",
+	"compatibility_date": "2026-08-01",
+	"vars": {
+		// Wikimedia asks API clients to identify themselves and give a contact
+		// route. Change this to point at your own deployment before going public.
+		"WIKIPEDIA_USER_AGENT": "LieToMe/0.1 (party game; https://github.com/; contact via repository)"
+	},
+	"durable_objects": {
+		"bindings": [{ "name": "ROOM", "class_name": "Room" }]
+	},
+	"migrations": [{ "tag": "v1", "new_sqlite_classes": ["Room"] }],
+	"dev": { "port": 8787 }
+}

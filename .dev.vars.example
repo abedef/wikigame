@@ -1,0 +1,2 @@
+# Consumed by `wrangler dev`. SESSION_SECRET must match the value in .env.
+SESSION_SECRET=

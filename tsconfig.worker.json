@@ -1,0 +1,35 @@
+{
+	// The worker runs on workerd, not in a browser, and its globals (Request,
+	// WebSocket, crypto) come from worker-configuration.d.ts rather than the DOM
+	// lib. Checking it under the SvelteKit tsconfig would collide the two sets of
+	// definitions, so it gets its own project. See the `check:worker` script.
+	"compilerOptions": {
+		"target": "esnext",
+		"module": "esnext",
+		"moduleResolution": "bundler",
+		"lib": ["esnext"],
+		// Brings in the "cloudflare:test" module used by the test suite.
+		"types": ["@cloudflare/vitest-pool-workers/types"],
+		"paths": {
+			"sveltekit-worker": ["./src/worker/sveltekit-worker.d.ts"]
+		},
+		"strict": true,
+		"noEmit": true,
+		"skipLibCheck": true,
+		"isolatedModules": true,
+		"verbatimModuleSyntax": true,
+		"forceConsistentCasingInFileNames": true
+	},
+	"include": [
+		"worker-configuration.d.ts",
+		"src/worker/**/*.ts",
+		"test/**/*.ts",
+		"vitest.config.ts",
+		"src/lib/protocol.ts",
+		"src/lib/names.ts",
+		"src/lib/room-code.ts",
+		// Only identity.ts is shared with the worker; the rest of src/lib/server is
+		// SvelteKit-only and imports $env, which does not exist out here.
+		"src/lib/server/identity.ts"
+	]
+}

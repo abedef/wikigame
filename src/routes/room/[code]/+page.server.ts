@@ -1,17 +1,13 @@
-import { getRoomByCode, joinRoomByCode, Stage } from '$lib';
+import { normaliseRoomCode } from '$lib/room-code';
+import { error, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async (event) => {
-	// If the room exists and is empty, join it
-	// If the room is not empty, provide a prompt to join it
-	const room = await getRoomByCode(event.params.code);
-	if (room && room.stage === Stage.PREGAME) {
-		const identity = event.cookies.get('id');
-		if (!identity) return { room };
+export const load: PageServerLoad = ({ params }) => {
+	const code = normaliseRoomCode(params.code);
+	if (!code) error(404, 'That is not a room code.');
+	// Codes are spoken aloud and typed in any case; settle on one spelling so
+	// everyone in the room shares a URL.
+	if (code !== params.code) redirect(307, `/room/${code}`);
 
-		const joinedRoom = await joinRoomByCode(identity, room.code);
-		return { room: joinedRoom };
-	}
-
-	return { room };
+	return { code };
 };

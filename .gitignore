@@ -21,3 +21,10 @@ Thumbs.db
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Cloudflare
+.dev.vars
+.wrangler
+# worker-configuration.d.ts is deliberately committed: it is generated from
+# wrangler.jsonc by `npm run cf-typegen`, and CI typechecks without Cloudflare
+# credentials. Regenerate it whenever the bindings change.
