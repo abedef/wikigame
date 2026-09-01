@@ -93,10 +93,10 @@ rejoin.
 and deploys to Cloudflare on a push to `main` — only if all of that passed. Two repository
 secrets are needed for the deploy step:
 
-| Secret | Where it comes from |
-| --- | --- |
-| `CLOUDFLARE_API_TOKEN` | Cloudflare dashboard, My Profile, API Tokens, "Edit Cloudflare Workers" template |
-| `CLOUDFLARE_ACCOUNT_ID` | `npx wrangler whoami` |
+| Secret                  | Where it comes from                                                              |
+| ----------------------- | -------------------------------------------------------------------------------- |
+| `CLOUDFLARE_API_TOKEN`  | Cloudflare dashboard, My Profile, API Tokens, "Edit Cloudflare Workers" template |
+| `CLOUDFLARE_ACCOUNT_ID` | `npx wrangler whoami`                                                            |
 
 `SESSION_SECRET` is deliberately not in that list. Worker secrets survive a deployment, so
 it stays whatever `wrangler secret put` last set it to and never has to travel through CI.

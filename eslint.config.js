@@ -11,6 +11,9 @@ const gitignorePath = fileURLToPath(new URL('./.gitignore', import.meta.url));
 
 export default ts.config(
 	includeIgnoreFile(gitignorePath),
+	// Generated from wrangler.jsonc by `npm run cf-typegen`. It is committed so CI
+	// can typecheck without Cloudflare credentials, but it is not ours to lint.
+	{ ignores: ['worker-configuration.d.ts'] },
 	js.configs.recommended,
 	...ts.configs.recommended,
 	...svelte.configs.recommended,
