@@ -79,8 +79,10 @@ describe('the lobby', () => {
 	it('refuses to start for anyone but the host', async () => {
 		const [, brendan] = await lobby(nextCode());
 		send(brendan, { type: 'start' });
-		await tick();
-		expect(brendan.errors.at(-1)?.code).toBe('not-host');
+		await waitFor(
+			() => brendan.errors.at(-1)?.code === 'not-host',
+			'brendan to be refused with not-host'
+		);
 	});
 
 	it('refuses to start below the minimum', async () => {
@@ -89,16 +91,20 @@ describe('the lobby', () => {
 		send(ada, { type: 'set-ready', ready: true });
 		await tick();
 		send(ada, { type: 'start' });
-		await tick();
-		expect(ada.errors.at(-1)?.code).toBe('not-enough-players');
+		await waitFor(
+			() => ada.errors.at(-1)?.code === 'not-enough-players',
+			'ada to be refused with not-enough-players'
+		);
 		expect(ada.state!.stage).toBe('lobby');
 	});
 
 	it('clamps settings and only lets the host change them', async () => {
 		const [ada, brendan] = await lobby(nextCode());
 		send(brendan, { type: 'set-settings', settings: { rounds: 3 } });
-		await tick();
-		expect(brendan.errors.at(-1)?.code).toBe('not-host');
+		await waitFor(
+			() => brendan.errors.at(-1)?.code === 'not-host',
+			'brendan to be refused with not-host'
+		);
 
 		send(ada, { type: 'set-settings', settings: { rounds: 9999, rerolls: -5 } });
 		await tick();
@@ -113,8 +119,10 @@ describe('the lobby', () => {
 		await waitFor(() => ada.state!.stage === 'picking', 'picking');
 
 		const late = await join(code, 'p4', 'Dmitri');
-		await tick();
-		expect(late.errors.at(-1)?.code).toBe('game-in-progress');
+		await waitFor(
+			() => late.errors.at(-1)?.code === 'game-in-progress',
+			'late to be refused with game-in-progress'
+		);
 		expect(ada.state!.players).toHaveLength(3);
 	});
 });
@@ -158,8 +166,10 @@ describe('a round', () => {
 		expect(guessee.own!.rerollsLeft).toBe(0);
 
 		send(guessee, { type: 'reroll' });
-		await tick(100);
-		expect(guessee.errors.at(-1)?.code).toBe('no-rerolls-left');
+		await waitFor(
+			() => guessee.errors.at(-1)?.code === 'no-rerolls-left',
+			'guessee to be refused with no-rerolls-left'
+		);
 	});
 
 	it('gives everyone their own article to read, and tells nobody whose it is', async () => {
@@ -253,8 +263,10 @@ describe('questioning and scoring', () => {
 	it('lets only the guesser name a reader', async () => {
 		const { clients, bluffer, reader } = await playToQuestioning(nextCode());
 		send(bluffer, { type: 'guess', playerId: reader.id });
-		await tick(100);
-		expect(bluffer.errors.at(-1)?.code).toBe('not-guesser');
+		await waitFor(
+			() => bluffer.errors.at(-1)?.code === 'not-guesser',
+			'bluffer to be refused with not-guesser'
+		);
 		expect(clients[0].state!.stage).toBe('questioning');
 	});
 
