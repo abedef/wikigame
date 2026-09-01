@@ -12,7 +12,9 @@
 		{@const isGuesser = player.id === room?.guesserId}
 		{@const isReader = player.id === room?.readerId}
 		{@const award = room?.awards?.[player.id]}
-		<li>
+		<!-- min-w-0: a grid item will not shrink below its content otherwise,
+		     so a long name would widen the row instead of being truncated. -->
+		<li class="min-w-0">
 			<svelte:element
 				this={pickable && !isGuesser ? 'button' : 'div'}
 				role={pickable && !isGuesser ? 'button' : undefined}

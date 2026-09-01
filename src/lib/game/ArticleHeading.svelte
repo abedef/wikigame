@@ -12,13 +12,13 @@
 			{href}
 			target="_blank"
 			rel="noreferrer"
-			class="decoration-accent text-xl font-bold underline underline-offset-4"
+			class="decoration-accent text-xl font-bold break-words underline underline-offset-4"
 		>
 			{article.title}
 		</a>
 		<!-- eslint-enable svelte/no-navigation-without-resolve -->
 	{:else}
-		<h3 class="text-xl font-bold">{article.title}</h3>
+		<h3 class="text-xl font-bold break-words">{article.title}</h3>
 	{/if}
 	{#if article.description}
 		<p class="text-muted mt-1 text-sm">{article.description}</p>

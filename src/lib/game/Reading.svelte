@@ -23,7 +23,10 @@
 	);
 </script>
 
-<div class="mb-4">
+<!-- On a phone the extract is taller than the screen, so an unpinned countdown
+     is gone by the time it matters. The negative margins let the backing span
+     the card's full width; they mirror its p-6 sm:p-8. -->
+<div class="bg-panel sticky top-0 z-10 -mx-6 mb-4 px-6 pt-2 pb-3 sm:-mx-8 sm:px-8">
 	<div class="flex items-baseline justify-between">
 		<span class="text-muted text-sm font-semibold tracking-widest uppercase">Reading</span>
 		<span class="text-2xl font-black">{secondsLeft}s</span>

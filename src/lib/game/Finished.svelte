@@ -19,8 +19,9 @@
 
 <ol class="mt-6 grid gap-2">
 	{#each standings as player, position (player.id)}
+		<!-- min-w-0 so a long name truncates rather than widening the row; see PlayerList. -->
 		<li
-			class="border-line flex items-center justify-between gap-3 rounded-xl border px-3 py-2
+			class="border-line flex min-w-0 items-center justify-between gap-3 rounded-xl border px-3 py-2
 				{player.score === best ? 'border-accent' : ''}"
 		>
 			<span class="flex min-w-0 items-center gap-3">

@@ -89,6 +89,7 @@
 				name="code"
 				placeholder="Room code"
 				maxlength={ROOM_CODE_LENGTH}
+				size={ROOM_CODE_LENGTH}
 				autocomplete="off"
 				autocapitalize="characters"
 				spellcheck="false"
