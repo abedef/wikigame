@@ -75,11 +75,11 @@ export const en = {
 			},
 			{
 				title: 'Everyone reads',
-				body: 'Once everyone has locked one in, you all get a minute alone with your own article. Any one of them could be the one that comes up and nobody knows which yet, so read it properly.'
+				body: 'Once everyone has locked one in, you all get a minute alone with your own article. Become the expert on yours. You should be able to answer anything you get asked about it.'
 			},
 			{
-				title: 'One article is picked',
-				body: "One of them is selected at random. If it's yours, great, you actually read it. If it isn't, you'll need to convince the guesser it was. Invent oddly specific details nobody can check, say them like you're bored of knowing them, and you might just get away with it."
+				title: 'One becomes the topic',
+				body: "One of your articles is selected as the topic of the round. If it's yours, great, you actually read it. If it isn't, doesn't matter — you'll need to convince the guesser you know all about it all the same. Invent oddly specific details nobody can check, say them like you're bored of knowing them, and you might just get away with it. You know your friends. You know what they'll fall for."
 			}
 		],
 		kicker:
