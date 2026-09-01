@@ -179,12 +179,15 @@ therefore pointed at the build configuration instead.
 ```
 src/lib/protocol.ts        the wire contract, imported by both ends
 src/lib/server/identity.ts cookie signing and verification
+src/lib/game/Table.svelte  a round, rendered the same wherever it is played
 src/lib/game/              one component per stage of a round
 src/worker/room.ts         the durable object; all the rules live here
 src/worker/router.ts       the game API, in front of the durable object
 src/worker/wikipedia.ts    article selection
 src/worker/index.ts        production entry; wraps the SvelteKit worker
 src/worker/dev.ts          development sidecar; the API alone
+src/routes/room/[code]/    the website: a room code and a cookie
+src/routes/discord/        the activity: an instance and a Discord account
 ```
 
 ## Installation and use

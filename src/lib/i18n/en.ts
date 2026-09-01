@@ -7,7 +7,7 @@
  * just fill in its blanks, and a function lets them.
  */
 
-import { MIN_PLAYERS, type ErrorCode } from '../protocol';
+import { MIN_PLAYERS, type ErrorCode, type Stage } from '../protocol';
 
 const plural = new Intl.PluralRules('en');
 const list = new Intl.ListFormat('en', { style: 'long', type: 'conjunction' });
@@ -104,6 +104,9 @@ export const en = {
 		helpRules: 'The game',
 		helpScoring: 'Points',
 		helpClose: 'Got it',
+		// Typed by Stage, so a stage added to the protocol is a compile error in
+		// every locale until somebody gives it a name. The table renders whatever
+		// this holds, for both the website and the activity.
 		stage: {
 			lobby: 'Lobby',
 			picking: 'Choosing articles',
@@ -111,7 +114,7 @@ export const en = {
 			questioning: 'Questioning',
 			reveal: 'Reveal',
 			finished: 'Final scores'
-		}
+		} satisfies Record<Stage, string>
 	},
 
 	lobby: {

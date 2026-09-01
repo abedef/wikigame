@@ -1,14 +1,7 @@
 <script lang="ts">
 	import { env as publicEnv } from '$env/dynamic/public';
 	import Card from '$lib/Card.svelte';
-	import Finished from '$lib/game/Finished.svelte';
-	import Help from '$lib/game/Help.svelte';
-	import Lobby from '$lib/game/Lobby.svelte';
-	import Picking from '$lib/game/Picking.svelte';
-	import PlayerList from '$lib/game/PlayerList.svelte';
-	import Questioning from '$lib/game/Questioning.svelte';
-	import Reading from '$lib/game/Reading.svelte';
-	import Reveal from '$lib/game/Reveal.svelte';
+	import Table from '$lib/game/Table.svelte';
 	import { GameConnection } from '$lib/game-connection.svelte';
 	import { t } from '$lib/i18n';
 
@@ -101,53 +94,12 @@
 		<p class="text-muted text-center">{text.room.connecting}</p>
 	</Card>
 {:else}
-	<Help {connection} />
-
-	<Card>
-		<header>
-			<p class="text-muted text-xs font-semibold tracking-widest uppercase">
-				{room.stage === 'lobby' || room.stage === 'finished'
-					? text.brand
-					: text.room.roundOf(room.round, room.settings.rounds)}
-			</p>
-			<h1 class="wiki-heading mt-1 text-3xl">{text.room.stage[room.stage] ?? room.stage}</h1>
-		</header>
-
-		{#if connection.status !== 'open'}
-			<p class="border-line text-muted mt-4 rounded-xl border border-dashed px-3 py-2 text-sm">
-				{connection.status === 'reconnecting' ? text.room.reconnecting : text.room.connecting}
-			</p>
-		{/if}
-
-		{#if connection.error}
-			<p class="text-accent mt-4 text-sm">
-				{text.errors[connection.error.code] ?? connection.error.message}
-			</p>
-		{/if}
-
-		<section class="mt-6">
-			{#if room.stage === 'lobby'}
-				<Lobby {connection} />
-			{:else if room.stage === 'picking'}
-				<Picking {connection} />
-			{:else if room.stage === 'reading'}
-				<Reading {connection} />
-			{:else if room.stage === 'questioning'}
-				<Questioning {connection} />
-			{:else if room.stage === 'reveal'}
-				<Reveal {connection} />
-			{:else if room.stage === 'finished'}
-				<Finished {connection} />
-			{/if}
-		</section>
-
-		{#if room.stage !== 'finished' && !(room.stage === 'questioning' && connection.isGuesser)}
-			<section class="border-line mt-6 border-t pt-6">
-				<h2 class="text-muted mb-3 text-sm font-semibold tracking-widest uppercase">
-					{text.players.heading(room.players.length)}
-				</h2>
-				<PlayerList {connection} />
-			</section>
-		{/if}
-	</Card>
+	<!-- No room code and no invite: Discord already put everyone in the same
+	     call, which is the whole reason the activity exists. -->
+	<Table
+		{connection}
+		eyebrow={room.stage === 'lobby' || room.stage === 'finished'
+			? text.brand
+			: text.room.roundOf(room.round, room.settings.rounds)}
+	/>
 {/if}
