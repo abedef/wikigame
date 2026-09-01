@@ -82,41 +82,52 @@
 		{/if}
 	</div>
 
+	<!--
+		Joining comes first, and is the filled button. Room codes are built to be
+		read out loud — the alphabet drops U because it is heard as "you" — and a
+		code read across a table sends everyone to this page, while an invite link
+		skips it entirely. So of the people who get here, most are arriving with a
+		code somebody just said. The label is a question so that anyone without one
+		knows to read past it rather than hunting for a code they do not have.
+	-->
 	<div class="mt-6 grid gap-4">
-		<form method="POST" action="?/host" use:enhance>
-			<Button type="submit" class="w-full">{text.landing.host}</Button>
-		</form>
-		{#if form?.hostError}
-			<p class="text-accent text-sm">{form.hostError}</p>
-		{/if}
+		<div>
+			<label for="code" class="mb-2 block font-semibold">{text.landing.haveCode}</label>
+			<form method="POST" action="?/join" class="flex gap-2" use:enhance>
+				<input
+					id="code"
+					name="code"
+					placeholder={text.landing.roomCode}
+					maxlength={ROOM_CODE_LENGTH}
+					size={ROOM_CODE_LENGTH}
+					autocomplete="off"
+					autocapitalize="characters"
+					spellcheck="false"
+					required
+					class="border-line bg-surface focus-visible:outline-accent min-w-0 flex-1 rounded-xl border
+					px-3 py-2 text-center text-lg font-semibold tracking-[0.4em] uppercase
+					focus-visible:outline-2"
+				/>
+				<Button type="submit">{text.landing.join}</Button>
+			</form>
+			{#if form?.codeError}
+				<p class="text-accent mt-2 text-sm">{form.codeError}</p>
+			{/if}
+		</div>
 
 		<div class="text-muted flex items-center gap-3 text-sm">
-			<span class="bg-line h-px flex-1"></span>{text.landing.orJoin}<span
-				class="bg-line h-px flex-1"
+			<span class="bg-line h-px flex-1"></span>{text.landing.or}<span class="bg-line h-px flex-1"
 			></span>
 		</div>
 
-		<form method="POST" action="?/join" class="flex gap-2" use:enhance>
-			<label class="sr-only" for="code">{text.landing.roomCode}</label>
-			<input
-				id="code"
-				name="code"
-				placeholder={text.landing.roomCode}
-				maxlength={ROOM_CODE_LENGTH}
-				size={ROOM_CODE_LENGTH}
-				autocomplete="off"
-				autocapitalize="characters"
-				spellcheck="false"
-				required
-				class="border-line bg-surface focus-visible:outline-accent min-w-0 flex-1 rounded-xl border
-					px-3 py-2 text-center text-lg font-semibold tracking-[0.4em] uppercase
-					focus-visible:outline-2"
-			/>
-			<Button type="submit" variant="secondary">{text.landing.join}</Button>
-		</form>
-		{#if form?.codeError}
-			<p class="text-accent text-sm">{form.codeError}</p>
-		{/if}
+		<div>
+			<form method="POST" action="?/host" use:enhance>
+				<Button type="submit" variant="secondary" class="w-full">{text.landing.host}</Button>
+			</form>
+			{#if form?.hostError}
+				<p class="text-accent mt-2 text-sm">{form.hostError}</p>
+			{/if}
+		</div>
 	</div>
 
 	<!--
