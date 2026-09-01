@@ -37,17 +37,20 @@ export const en = {
 	brand: '[citation needed]',
 
 	meta: {
-		tagline: 'The free bluffing game that anyone can play.',
+		tagline:
+			"In a minute you'll be talking about an article you never opened. Try to sound like you did.",
 		description:
-			'A bluffing game played with Wikipedia articles. Everyone claims they read it; one of them did.',
+			'You will be asked about a Wikipedia article you never opened. So will everyone else at the table. One of them is telling the truth.',
 		roomTitle: (code: string) => `Room ${code} — [citation needed]`,
 		disclaimer:
 			'Not affiliated with or endorsed by the Wikimedia Foundation. Wikipedia is a registered trademark of the Wikimedia Foundation.'
 	},
 
 	landing: {
-		pitchBefore: 'Everyone at the table claims they read the article. One of them actually',
-		pitchLastWord: 'did.',
+		// Ends on a claim worth doubting, so the marker lands on something that
+		// has earned it rather than being decoration.
+		pitchBefore: 'One of you will actually have read it. The difference will be',
+		pitchLastWord: 'obvious.',
 		youAre: 'You are',
 		change: 'Change',
 		yourName: 'Your name',
@@ -88,9 +91,9 @@ export const en = {
 		rounds: 'Rounds',
 		roundsHint: 'How many times the chair changes hands.',
 		redraws: 'Redraws',
-		redrawsHint: 'Redraws each player gets per round.',
+		redrawsHint: 'How many articles each player can throw back.',
 		readingTime: 'Reading time',
-		readingTimeHint: 'Seconds the reader gets alone with it.',
+		readingTimeHint: 'How long the reader gets alone with it.',
 		summary: (rounds: number, redraws: number, seconds: number) =>
 			`${rounds} rounds · ${redraws} redraws · ${seconds}s to read`,
 		ready: "I'm ready",
@@ -102,54 +105,61 @@ export const en = {
 	},
 
 	picking: {
-		guesserLead: 'You are the guesser this round.',
+		guesserLead: 'You sit this part out.',
 		guesserBody:
-			'Everyone else is drawing a random article. One of theirs will be chosen, and only that person gets to read it — your job is to work out who.',
+			'The others are picking articles they think they can fake. One of them will actually get to read theirs. The rest will lie to your face about it.',
 		settled: (settled: number, total: number) =>
-			`${settled} of ${total} have settled on an article.`,
-		lockedIn: 'Locked in.',
+			settled === total
+				? 'Everyone has something. Any moment now.'
+				: total - settled === 1
+					? 'One of them is still shopping for something they can talk about.'
+					: `${total - settled} of them are still shopping for something they can talk about.`,
+		lockedIn: "That's the one.",
 		waitingOthers: (settled: number, total: number) =>
-			`Waiting for the others. ${settled} of ${total} have chosen.`,
-		hint: 'If this one is drawn, you will be the only person who reads it — and you will be trying to convince the guesser that you did. Redraw until you get something you could talk about.',
+			settled === total
+				? 'Everyone has settled. Any moment now.'
+				: `${settled} of ${total} have settled. Waiting on the rest.`,
+		hint: 'If this one comes up you are the only person who gets to read it, and the only one who will be telling the truth. Redraw until you find something you could talk about for a minute without help.',
 		redraw: (left: number) => `Redraw (${left} left)`,
 		noRedraws: 'No redraws left',
 		lockThisIn: 'Lock this in',
-		drawing: 'Drawing an article for you…'
+		drawing: 'Finding you something…'
 	},
 
 	reading: {
 		label: 'Reading',
 		secondsLeft: (seconds: number) => `${seconds}s`,
-		yoursLead: 'This one is yours. You are the reader.',
+		yoursLead: 'This one is yours. Nobody else gets to see it.',
 		yoursBody:
-			'You want to be found: the guesser scores with you. Take in enough to prove you were really here — but remember everyone else can hear your answers and will copy them.',
+			'You want to be caught: you score when the guesser finds you. So give them something real — and remember the others are listening to every word and will hand it straight back to you as their own.',
 		openFull: 'Open the full article',
 		doneReading: "I've read enough — start the questions",
-		guesserBody: 'One of the others is reading this right now. Everyone will claim they did.',
+		guesserBody:
+			'Someone at the table is reading this right now. Shortly they will all say they were.',
 		blufferBody:
-			'Someone else drew this and is reading it now. You will have to pretend it was you, so think about anything you already know on the subject.'
+			'Someone else got this one. You get the title and whatever you can build out of it, so start now — you will be asked about it as though you had read it.'
 	},
 
 	questioning: {
-		guesserLead: 'Question the table, then name the reader.',
+		guesserLead: 'Ask them anything. Then name the one who read it.',
 		guesserBody:
-			'The reader is on your side — they score when you find them. Everyone else is trying to sound exactly like them. Take as long as you like; choose when you are ready.',
-		answerLead: 'Answer the questions.',
-		readerBody: 'Convince them it was you.',
+			'The reader wants to be found — they score when you get it right. Everyone else is doing an impression of them. Take as long as you like.',
+		answerLead: 'Answer as though you read it.',
+		readerBody: 'You did read it. Make that obvious without handing the others your material.',
 		blufferBody:
 			'You never saw it. Convince them you did anyway — being named is worth more to you than being believed by anyone else.',
-		waitingFor: (name: string) => `Waiting for ${name} to decide.`
+		waitingFor: (name: string) => `${name} is deciding.`
 	},
 
 	reveal: {
-		found: (guesser: string) => `${guesser} found the reader.`,
-		missed: (named: string, reader: string) => `${named} was named — but ${reader} was the reader.`,
-		foundBody: (reader: string) => `${reader} got the article across, and they both score for it.`,
-		missedBody: (named: string) => `${named} bluffed their way past the real thing.`,
+		found: (guesser: string) => `${guesser} got it.`,
+		missed: (named: string, reader: string) => `${named} sold it. ${reader} actually read it.`,
+		foundBody: (reader: string) => `${reader} made it obvious enough. They both score.`,
+		missedBody: (named: string) => `${named} out-read the person who actually read it.`,
 		nextRound: (round: number) => `Start round ${round}`,
 		seeFinalScores: 'See the final scores',
 		takesChair: (name: string) => `${name} takes the chair next.`,
-		waitingForHost: (name: string) => `${name} is the next guesser. Waiting for the host.`
+		waitingForHost: (name: string) => `${name} has the chair next. Waiting for the host.`
 	},
 
 	finished: {
