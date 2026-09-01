@@ -7,7 +7,7 @@
  * just fill in its blanks, and a function lets them.
  */
 
-import type { ErrorCode } from '$lib/protocol';
+import type { ErrorCode } from '../protocol';
 
 const plural = new Intl.PluralRules('en');
 const list = new Intl.ListFormat('en', { style: 'long', type: 'conjunction' });
