@@ -9,7 +9,9 @@
 	const room = $derived(connection.state);
 </script>
 
-<ul class="grid gap-2">
+<!-- The tests address this list directly; the page has other lists on it,
+     including one inside the help dialog that is present even when closed. -->
+<ul data-testid="players" class="grid gap-2">
 	{#each room?.players ?? [] as player (player.id)}
 		{@const isGuesser = player.id === room?.guesserId}
 		{@const isReader = player.id === room?.readerId}
