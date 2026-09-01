@@ -1,2 +1,5 @@
 # Consumed by `wrangler dev`. SESSION_SECRET must match the value in .env.
 SESSION_SECRET=
+
+# Discord application client secret, for the activity's OAuth exchange.
+DISCORD_CLIENT_SECRET=

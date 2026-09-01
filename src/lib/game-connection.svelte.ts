@@ -57,7 +57,13 @@ export class GameConnection {
 	constructor(
 		private readonly code: string,
 		private readonly token: string,
-		private readonly name: string
+		private readonly name: string,
+		/**
+		 * Which kind of room this is. On the website a room is addressed by its
+		 * code; inside Discord it is addressed by the activity instance everyone
+		 * launched together, and there is no code to type.
+		 */
+		private readonly kind: 'room' | 'discord' = 'room'
 	) {}
 
 	connect(): void {
@@ -66,7 +72,10 @@ export class GameConnection {
 		// A throwaway used to assemble the socket address. It is never read after
 		// the connection opens, so it does not need to be reactive.
 		// eslint-disable-next-line svelte/prefer-svelte-reactivity
-		const url = new URL(`/api/room/${encodeURIComponent(this.code)}/ws`, gameServerOrigin());
+		const url = new URL(
+			`/api/${this.kind}/${encodeURIComponent(this.code)}/ws`,
+			gameServerOrigin()
+		);
 		url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
 		url.searchParams.set('t', this.token);
 		url.searchParams.set('name', this.name);

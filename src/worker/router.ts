@@ -61,10 +61,23 @@ export async function handleApi(
 		return json({ code }, { status: 201 }, cors);
 	}
 
-	const ws = url.pathname.match(/^\/api\/room\/([^/]+)\/ws$/);
+	// A room on the website is addressed by its code. A room inside Discord is
+	// addressed by the activity instance everybody launched together: there is no
+	// code to read out, because Discord already put them in the same place. The
+	// name is namespaced so the two can never collide.
+	const ws = url.pathname.match(/^\/api\/(room|discord)\/([^/]+)\/ws$/);
 	if (ws) {
-		const code = normaliseRoomCode(decodeURIComponent(ws[1]));
-		if (!code) return json({ error: 'That is not a room code.' }, { status: 400 }, cors);
+		const [, kind, raw] = ws;
+		let room: string | null;
+		if (kind === 'discord') {
+			// Opaque to us, so accept only a conservative shape rather than letting
+			// any string name a durable object.
+			const instance = decodeURIComponent(raw);
+			room = /^[A-Za-z0-9_-]{1,64}$/.test(instance) ? `discord:${instance}` : null;
+		} else {
+			room = normaliseRoomCode(decodeURIComponent(raw));
+		}
+		if (!room) return json({ error: 'That is not a room.' }, { status: 400 }, cors);
 
 		if (!env.SESSION_SECRET) {
 			console.error('SESSION_SECRET is not set; refusing to accept players.');
@@ -81,9 +94,9 @@ export async function handleApi(
 		forwarded.pathname = '/ws';
 		forwarded.searchParams.delete('t');
 		forwarded.searchParams.set('pid', playerId);
-		forwarded.searchParams.set('code', code);
+		forwarded.searchParams.set('code', room);
 
-		return env.ROOM.getByName(code).fetch(new Request(forwarded, request));
+		return env.ROOM.getByName(room).fetch(new Request(forwarded, request));
 	}
 
 	// Not one of ours. SvelteKit owns every other /api route.
