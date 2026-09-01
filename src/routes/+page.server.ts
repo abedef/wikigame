@@ -1,5 +1,6 @@
 import { env as publicEnv } from '$env/dynamic/public';
 import { normaliseRoomCode } from '$lib/room-code';
+import { reserveRoomCode } from '$lib/server/rooms';
 import { saveName } from '$lib/server/session';
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions } from './$types';
@@ -23,16 +24,31 @@ export const actions: Actions = {
 		redirect(303, `/room/${code}`);
 	},
 
-	host: async ({ url, fetch }) => {
-		const origin = publicEnv.PUBLIC_GAME_SERVER?.trim() || url.origin;
+	host: async ({ url, fetch, platform }) => {
+		let code: string | null = null;
 
-		let code: string;
 		try {
-			const response = await fetch(`${origin}/api/rooms`, { method: 'POST' });
-			if (!response.ok) throw new Error(`game server said ${response.status}`);
-			({ code } = (await response.json()) as { code: string });
+			const rooms = platform?.env?.ROOM;
+			if (rooms) {
+				// In production this action runs inside the very worker that hosts the
+				// durable object, so it talks to the binding directly. It must not go
+				// over HTTP: a worker's subrequest to its own hostname does not
+				// re-enter the worker, it is answered by the static asset handler,
+				// which has no /api/rooms and returns 404.
+				code = await reserveRoomCode(rooms);
+			} else {
+				// `vite dev` has no bindings, so in development the durable object is
+				// reached across origins in the wrangler sidecar.
+				const origin = publicEnv.PUBLIC_GAME_SERVER?.trim() || url.origin;
+				const response = await fetch(`${origin}/api/rooms`, { method: 'POST' });
+				if (!response.ok) throw new Error(`game server said ${response.status}`);
+				({ code } = (await response.json()) as { code: string });
+			}
 		} catch (cause) {
 			console.error('could not reserve a room code', cause);
+		}
+
+		if (!code) {
 			return fail(502, { hostError: 'The game server is not answering. Try again in a moment.' });
 		}
 

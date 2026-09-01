@@ -30,6 +30,7 @@
 		"src/lib/room-code.ts",
 		// Only identity.ts is shared with the worker; the rest of src/lib/server is
 		// SvelteKit-only and imports $env, which does not exist out here.
-		"src/lib/server/identity.ts"
+		"src/lib/server/identity.ts",
+		"src/lib/server/rooms.ts"
 	]
 }

@@ -1,5 +1,6 @@
 import { verifyPlayerToken } from '../lib/server/identity';
-import { createRoomCode, normaliseRoomCode } from '../lib/room-code';
+import { reserveRoomCode } from '../lib/server/rooms';
+import { normaliseRoomCode } from '../lib/room-code';
 import type { Env } from './room';
 
 /**
@@ -55,12 +56,9 @@ export async function handleApi(
 	// Reserve a room code. The room itself springs into being when its host
 	// actually connects, so a code nobody uses costs nothing.
 	if (url.pathname === '/api/rooms' && request.method === 'POST') {
-		for (let attempt = 0; attempt < 5; attempt++) {
-			const code = createRoomCode();
-			const room = await env.ROOM.getByName(code).describe();
-			if (room.players.length === 0) return json({ code }, { status: 201 }, cors);
-		}
-		return json({ error: 'Could not find a free room code.' }, { status: 503 }, cors);
+		const code = await reserveRoomCode(env.ROOM);
+		if (!code) return json({ error: 'Could not find a free room code.' }, { status: 503 }, cors);
+		return json({ code }, { status: 201 }, cors);
 	}
 
 	const ws = url.pathname.match(/^\/api\/room\/([^/]+)\/ws$/);

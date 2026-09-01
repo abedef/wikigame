@@ -154,6 +154,13 @@ and verified by the worker before a socket may act as that player. A player may 
 identity, but cannot assume another's. Display names are deliberately unsigned, being
 cosmetic and load-bearing for nothing.
 
+**Self-addressed requests.** Server-side code reaches the Durable Object through its
+binding rather than over HTTP. A Worker's subrequest to its own hostname does not re-enter
+the Worker; with static assets configured it is answered by the asset handler, which knows
+nothing of `/api/rooms` and returns 404. The room-hosting page action therefore uses
+`platform.env.ROOM` in production and falls back to an HTTP call only under `vite dev`,
+where no bindings exist and the Durable Object is a separate process.
+
 **Build configuration.** Two Wrangler configuration files exist. `wrangler.jsonc` is the
 operative one. `wrangler.build.jsonc` exists solely because `adapter-cloudflare` writes its
 generated worker to whatever path `main` names in the configuration file it reads,<sup>[[2]](#references)</sup>
