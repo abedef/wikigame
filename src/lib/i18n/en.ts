@@ -71,15 +71,15 @@ export const en = {
 		steps: [
 			{
 				title: 'Everyone gets an article',
-				body: "You'll each get a random Wikipedia article. Don't like yours? Redraw it. Go for something you reckon you could talk about."
+				body: "You'll each get a random Wikipedia article. Don't like yours? Redraw it. Pick something you reckon you could talk about."
 			},
 			{
 				title: 'Everyone reads',
-				body: 'You all get a minute alone with your own article. One of them is going to come up, but nobody knows which one yet, so read fast!'
+				body: 'Once everyone has locked one in, you all get a minute alone with your own article. Any one of them could be the one that comes up and nobody knows which yet, so read it properly.'
 			},
 			{
-				title: 'One article comes up',
-				body: "If it's yours, great, you actually read it. If it isn't, you have to convince the guesser it was you anyway."
+				title: 'One article is picked',
+				body: "One of them is selected at random. If it's yours, great, you actually read it. If it isn't, you'll need to convince the guesser it was. Invent oddly specific details nobody can check, say them like you're bored of knowing them, and you might just get away with it."
 			}
 		],
 		kicker:
