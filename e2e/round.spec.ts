@@ -45,6 +45,18 @@ async function settle(page: Page) {
 	if (await lock.isVisible()) await lock.click();
 }
 
+/**
+ * Get past the questioning. The bots only pick when the chair is theirs, so if
+ * it landed on us nobody else is going to end this round.
+ */
+async function resolveQuestioning(page: Page) {
+	await expect(page.getByRole('heading', { name: 'Questioning' })).toBeVisible({ timeout: 40_000 });
+	const ours = page.getByText('Ask them anything you like.');
+	if (await ours.isVisible().catch(() => false)) {
+		await page.getByTestId('players').locator('li > button').first().click();
+	}
+}
+
 test('a round runs from the lobby to the reveal', async ({ page, baseURL }) => {
 	await startGame(page, baseURL!);
 
@@ -54,6 +66,8 @@ test('a round runs from the lobby to the reveal', async ({ page, baseURL }) => {
 	await expect(page.getByRole('heading', { name: 'Reading' })).toBeVisible({ timeout: 30_000 });
 	const done = page.getByRole('button', { name: "I'm done reading" });
 	if (await done.isVisible().catch(() => false)) await done.click();
+
+	await resolveQuestioning(page);
 
 	// The reveal names who read it and publishes the text.
 	await expect(page.getByRole('heading', { name: 'Reveal' })).toBeVisible({ timeout: 40_000 });
@@ -90,12 +104,14 @@ test('the topic is a title only until the reveal publishes it', async ({ page, b
 
 	await expect(page.getByRole('heading', { name: 'Questioning' })).toBeVisible({ timeout: 40_000 });
 
+	// Measured before the round is resolved, or this reads the reveal.
 	// Whatever else is on the questioning screen, none of it is article prose:
 	// the longest thing there should be the guidance, not an extract.
 	const longestAtQuestioning = await page.evaluate(() =>
 		Math.max(...[...document.querySelectorAll('main p')].map((p) => p.textContent!.trim().length))
 	);
 
+	await resolveQuestioning(page);
 	await expect(page.getByRole('heading', { name: 'Reveal' })).toBeVisible({ timeout: 40_000 });
 	const longestAtReveal = await page.evaluate(() =>
 		Math.max(...[...document.querySelectorAll('main p')].map((p) => p.textContent!.trim().length))

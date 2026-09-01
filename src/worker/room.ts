@@ -24,6 +24,8 @@ export type Env = {
 	WIKIPEDIA_USER_AGENT?: string;
 	/** The one hostname the game is served on. Everything else redirects to it. */
 	CANONICAL_HOST?: string;
+	/** Overrides where articles are drawn from. Set by the browser suite. */
+	WIKIPEDIA_ORIGIN?: string;
 };
 
 type PlayerRow = {
@@ -530,7 +532,12 @@ export class Room extends DurableObject<Env> {
 		const generation = this.generation();
 		let articles: Article[];
 		try {
-			articles = await randomArticles(targets.length, this.env.WIKIPEDIA_USER_AGENT);
+			articles = await randomArticles(
+				targets.length,
+				this.env.WIKIPEDIA_USER_AGENT,
+				undefined,
+				this.env.WIKIPEDIA_ORIGIN
+			);
 		} catch (error) {
 			console.error('could not deal articles', error);
 			return this.broadcastError(
@@ -571,7 +578,11 @@ export class Room extends DurableObject<Env> {
 		const generation = this.generation();
 		let article: Article;
 		try {
-			article = await randomArticle(this.env.WIKIPEDIA_USER_AGENT);
+			article = await randomArticle(
+				this.env.WIKIPEDIA_USER_AGENT,
+				undefined,
+				this.env.WIKIPEDIA_ORIGIN
+			);
 		} catch (error) {
 			console.error('reroll failed', error);
 			this.ctx.storage.sql.exec(
@@ -822,6 +833,7 @@ const REFUSAL_TEXT: Record<ErrorCode, string> = {
 	'not-host': 'Only the host can do that.',
 	'not-guesser': 'Only the guesser can do that.',
 	'not-enough-players': `You need at least ${MIN_PLAYERS} players.`,
+	'not-everyone-ready': 'Everyone has to be ready first.',
 	'no-rerolls-left': 'You have used all your redraws.',
 	'wikipedia-unavailable': 'Wikipedia is not answering right now.',
 	'bad-request': 'That request did not make sense.',

@@ -14,8 +14,13 @@ import type { Article } from '../lib/protocol';
  */
 export const DEFAULT_ARTICLE_LANGUAGE = 'en';
 
-const randomSummaryUrl = (language: string) =>
-	`https://${language}.wikipedia.org/api/rest_v1/page/random/summary`;
+/**
+ * Overridable so the browser suite can point at a stub. A gate that reaches
+ * Wikipedia for every round fails on their latency rather than on our bugs,
+ * and asks them for a lot of random articles to prove nothing about them.
+ */
+const randomSummaryUrl = (language: string, origin?: string) =>
+	`${origin ?? `https://${language}.wikipedia.org`}/api/rest_v1/page/random/summary`;
 
 /**
  * Wikimedia asks that API clients identify themselves and give a way to be
@@ -52,13 +57,14 @@ type SummaryResponse = {
  */
 export async function randomArticle(
 	userAgent = DEFAULT_USER_AGENT,
-	language = DEFAULT_ARTICLE_LANGUAGE
+	language = DEFAULT_ARTICLE_LANGUAGE,
+	origin?: string
 ): Promise<Article> {
 	let lastError: unknown = null;
 
 	for (let attempt = 0; attempt < ATTEMPTS; attempt++) {
 		try {
-			const response = await fetch(randomSummaryUrl(language), {
+			const response = await fetch(randomSummaryUrl(language, origin), {
 				headers: { 'User-Agent': userAgent, Accept: 'application/json' },
 				// The random endpoint answers with a redirect to the drawn article, and
 				// every draw must be a fresh one.
@@ -104,7 +110,10 @@ function isPlayable(summary: SummaryResponse): boolean {
 export async function randomArticles(
 	count: number,
 	userAgent?: string,
-	language = DEFAULT_ARTICLE_LANGUAGE
+	language = DEFAULT_ARTICLE_LANGUAGE,
+	origin?: string
 ): Promise<Article[]> {
-	return Promise.all(Array.from({ length: count }, () => randomArticle(userAgent, language)));
+	return Promise.all(
+		Array.from({ length: count }, () => randomArticle(userAgent, language, origin))
+	);
 }

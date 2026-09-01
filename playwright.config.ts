@@ -37,13 +37,23 @@ export default defineConfig({
 			use: { ...devices['Pixel 7'] }
 		}
 	],
-	webServer: {
-		command: 'npm run preview',
-		url: baseURL,
-		reuseExistingServer: !process.env.CI,
-		// `preview` builds before it serves.
-		timeout: 180_000,
-		stdout: 'pipe',
-		stderr: 'pipe'
-	}
+	webServer: [
+		{
+			// Deterministic articles, so a round is not waiting on Wikipedia and a
+			// failure here is always our own.
+			command: 'node e2e/wikipedia-stub.mjs',
+			url: 'http://localhost:8788/api/rest_v1/page/random/summary',
+			reuseExistingServer: !process.env.CI,
+			timeout: 20_000
+		},
+		{
+			command: 'npm run preview:e2e',
+			url: baseURL,
+			reuseExistingServer: !process.env.CI,
+			// `preview` builds before it serves.
+			timeout: 180_000,
+			stdout: 'pipe',
+			stderr: 'pipe'
+		}
+	]
 });

@@ -59,8 +59,9 @@ jobs:
           printf 'SESSION_SECRET=%s\n' "$SECRET" > .dev.vars
           printf 'SESSION_SECRET=%s\nPUBLIC_GAME_SERVER=\n' "$SECRET" > .env
 
-      # Starts the worker itself, via the webServer in playwright.config.ts.
-      # A round deals real articles from Wikipedia, so this touches the network.
+      # playwright.config.ts starts both the worker and a stub standing in for
+      # Wikipedia, so a round is deterministic and the job never fails on
+      # somebody else's latency.
       - run: npm run test:e2e
 
       - uses: actions/upload-artifact@v4
