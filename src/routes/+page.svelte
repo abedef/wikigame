@@ -27,16 +27,19 @@
 		<p class="text-muted mt-3 font-serif">{text.meta.tagline}</p>
 	</div>
 
-	<p class="border-line-soft mt-6 border-t pt-6 leading-relaxed">
-		{text.meta.needsBefore}
-		<!-- The marker has to stay welded to the word it annotates; on a narrow
-		     screen it otherwise wraps onto a line of its own and stops reading as
-		     a footnote at all. -->
-		<span class="whitespace-nowrap"
-			>{text.meta.needsLastWord}<sup class="text-accent ml-0.5 text-[0.7em]">{text.brand}</sup
-			></span
-		>
-	</p>
+	<div class="border-line-soft mt-6 border-t pt-6">
+		<p class="text-lg leading-snug font-semibold">{text.meta.twist}</p>
+		<p class="text-muted mt-2 text-sm leading-relaxed">
+			{text.meta.needsBefore}
+			<!-- The marker has to stay welded to the word it annotates; on a narrow
+			     screen it otherwise wraps onto a line of its own and stops reading as
+			     a footnote at all. -->
+			<span class="whitespace-nowrap"
+				>{text.meta.needsLastWord}<sup class="text-accent ml-0.5 text-[0.7em]">{text.brand}</sup
+				></span
+			>
+		</p>
+	</div>
 
 	<div class="border-line-soft mt-6 border-t pt-6">
 		{#if editingName}

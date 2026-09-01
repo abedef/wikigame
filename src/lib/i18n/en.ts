@@ -37,6 +37,10 @@ export const en = {
 	meta: {
 		tagline:
 			"In a minute you'll be talking about an article you never opened. Try to sound like you did.",
+		// The hook, and the one thing that makes this different from every other
+		// bluffing game, so it goes above the fold rather than at the foot of the
+		// page where it started.
+		twist: "Here's the twist: if you really did read it, you want to get caught.",
 		// Says what you need before you can play, which nothing else on the page
 		// does, and lands the marker on a claim worth doubting.
 		needsBefore:
@@ -80,7 +84,7 @@ export const en = {
 			}
 		],
 		kicker:
-			"Here's the twist: if you really did read it, you want to be found! You and the guesser both score when they pick you. So everybody ends up trying to sound like the person who read it."
+			'Get picked when you really did read it and you and the guesser both take 2 points. Get picked when you were bluffing and you take 3 on your own. Either way, whoever got picked is the next guesser.'
 	},
 
 	room: {
