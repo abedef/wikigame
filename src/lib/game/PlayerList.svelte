@@ -1,9 +1,11 @@
 <script lang="ts">
+	import { t } from '$lib/i18n';
 	import type { GameConnection } from '$lib/game-connection.svelte';
 
 	let { connection, pickable = false }: { connection: GameConnection; pickable?: boolean } =
 		$props();
 
+	const text = t();
 	const room = $derived(connection.state);
 </script>
 
@@ -33,15 +35,15 @@
 					     with the [copy invite link] treatment elsewhere. shrink-0 keeps them
 					     whole so it is the name that truncates. -->
 					{#if player.id === connection.you}
-						<span class="text-muted shrink-0 text-sm">(you)</span>
+						<span class="text-muted shrink-0 text-sm">{text.players.you}</span>
 					{/if}
 					{#if isGuesser}
-						<span class="text-accent shrink-0 text-xs font-semibold">[guesser]</span>
+						<span class="text-accent shrink-0 text-xs font-semibold">{text.players.guesser}</span>
 					{:else if isReader}
-						<span class="text-accent shrink-0 text-xs font-semibold">[reader]</span>
+						<span class="text-accent shrink-0 text-xs font-semibold">{text.players.reader}</span>
 					{/if}
 					{#if player.isHost}
-						<span class="text-muted shrink-0 text-xs">[host]</span>
+						<span class="text-muted shrink-0 text-xs">{text.players.host}</span>
 					{/if}
 				</span>
 
@@ -50,14 +52,14 @@
 						<span class="text-accent text-sm font-bold">+{award}</span>
 					{/if}
 					{#if !player.connected}
-						<span class="text-muted text-sm">away</span>
+						<span class="text-muted text-sm">{text.players.disconnected}</span>
 					{:else if room?.stage === 'lobby'}
 						<span class="text-sm {player.ready ? 'text-accent font-semibold' : 'text-muted'}">
-							{player.ready ? 'Ready' : 'Not ready'}
+							{player.ready ? text.players.ready : text.players.notReady}
 						</span>
 					{:else if room?.stage === 'picking' && !isGuesser}
 						<span class="text-sm {player.lockedIn ? 'text-accent font-semibold' : 'text-muted'}">
-							{player.lockedIn ? 'Locked in' : 'Choosing'}
+							{player.lockedIn ? text.players.lockedIn : text.players.choosing}
 						</span>
 					{:else}
 						<span class="text-sm font-bold">{player.score}</span>

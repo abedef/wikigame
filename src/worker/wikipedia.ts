@@ -1,6 +1,21 @@
 import type { Article } from '../lib/protocol';
 
-const RANDOM_SUMMARY = 'https://en.wikipedia.org/api/rest_v1/page/random/summary';
+/**
+ * Which Wikipedia to draw from.
+ *
+ * This is the half of localisation that decides what the game actually is: the
+ * round is reading an article and describing it, so a table playing in French
+ * needs fr.wikipedia.org, not a French interface wrapped around English prose.
+ * Every language edition exposes the same REST API, so the language code is the
+ * only thing that changes.
+ *
+ * It is a property of the room rather than of a player — everyone at a table has
+ * to be shown the same article — so it is threaded through from the caller.
+ */
+export const DEFAULT_ARTICLE_LANGUAGE = 'en';
+
+const randomSummaryUrl = (language: string) =>
+	`https://${language}.wikipedia.org/api/rest_v1/page/random/summary`;
 
 /**
  * Wikimedia asks that API clients identify themselves and give a way to be
@@ -35,12 +50,15 @@ type SummaryResponse = {
  * all — disambiguation pages, list pages, and stubs with no prose — and lets
  * the players' rerolls do the rest.
  */
-export async function randomArticle(userAgent = DEFAULT_USER_AGENT): Promise<Article> {
+export async function randomArticle(
+	userAgent = DEFAULT_USER_AGENT,
+	language = DEFAULT_ARTICLE_LANGUAGE
+): Promise<Article> {
 	let lastError: unknown = null;
 
 	for (let attempt = 0; attempt < ATTEMPTS; attempt++) {
 		try {
-			const response = await fetch(RANDOM_SUMMARY, {
+			const response = await fetch(randomSummaryUrl(language), {
 				headers: { 'User-Agent': userAgent, Accept: 'application/json' },
 				// The random endpoint answers with a redirect to the drawn article, and
 				// every draw must be a fresh one.
@@ -83,6 +101,10 @@ function isPlayable(summary: SummaryResponse): boolean {
 }
 
 /** Draw several at once, for the start of a picking stage. */
-export async function randomArticles(count: number, userAgent?: string): Promise<Article[]> {
-	return Promise.all(Array.from({ length: count }, () => randomArticle(userAgent)));
+export async function randomArticles(
+	count: number,
+	userAgent?: string,
+	language = DEFAULT_ARTICLE_LANGUAGE
+): Promise<Article[]> {
+	return Promise.all(Array.from({ length: count }, () => randomArticle(userAgent, language)));
 }

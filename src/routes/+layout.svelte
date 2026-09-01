@@ -1,7 +1,15 @@
 <script lang="ts">
 	import '../app.css';
+	import { provideMessages } from '$lib/i18n';
 
-	let { children } = $props();
+	let { children, data } = $props();
+
+	// Every component below reads its text from here, and it has to be provided
+	// before they initialise. Reading the initial value is what is wanted: the
+	// locale is settled server-side per document, and changing it reloads the
+	// page rather than swapping strings under a live component tree.
+	// svelte-ignore state_referenced_locally
+	const t = provideMessages(data.locale);
 </script>
 
 <div class="flex min-h-dvh flex-col items-center justify-center px-4 py-10">
@@ -17,7 +25,6 @@
 		than part of any screen.
 	-->
 	<footer class="text-muted mt-8 w-full max-w-lg text-center text-xs leading-relaxed text-balance">
-		Not affiliated with or endorsed by the Wikimedia Foundation. Wikipedia is a registered trademark
-		of the Wikimedia Foundation.
+		{t.meta.disclaimer}
 	</footer>
 </div>

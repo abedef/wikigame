@@ -1,10 +1,12 @@
 <script lang="ts">
+	import { t } from '$lib/i18n';
 	import Button from '$lib/Button.svelte';
 	import type { GameConnection } from '$lib/game-connection.svelte';
 	import ArticleHeading from './ArticleHeading.svelte';
 
 	let { connection }: { connection: GameConnection } = $props();
 
+	const text = t();
 	const room = $derived(connection.state);
 	const own = $derived(connection.own);
 	const settled = $derived(
@@ -17,22 +19,14 @@
 </script>
 
 {#if connection.isGuesser}
-	<p class="font-semibold">You are the guesser this round.</p>
-	<p class="text-muted mt-2">
-		Everyone else is drawing a random article. One of theirs will be chosen, and only that person
-		gets to read it — your job is to work out who.
-	</p>
-	<p class="text-muted mt-4 text-sm">{settled} of {total} have settled on an article.</p>
+	<p class="font-semibold">{text.picking.guesserLead}</p>
+	<p class="text-muted mt-2">{text.picking.guesserBody}</p>
+	<p class="text-muted mt-4 text-sm">{text.picking.settled(settled, total)}</p>
 {:else if own.lockedIn}
-	<p class="font-semibold">Locked in.</p>
-	<p class="text-muted mt-2">
-		Waiting for the others. {settled} of {total} have chosen.
-	</p>
+	<p class="font-semibold">{text.picking.lockedIn}</p>
+	<p class="text-muted mt-2">{text.picking.waitingOthers(settled, total)}</p>
 {:else if own.candidate}
-	<p class="text-muted text-sm">
-		If this one is drawn, you will be the only person who reads it — and you will be trying to
-		convince the guesser that you did. Redraw until you get something you could talk about.
-	</p>
+	<p class="text-muted text-sm">{text.picking.hint}</p>
 	<div class="mt-4">
 		<ArticleHeading article={own.candidate} />
 	</div>
@@ -42,10 +36,10 @@
 			disabled={own.rerollsLeft === 0}
 			onclick={() => connection.send({ type: 'reroll' })}
 		>
-			{own.rerollsLeft > 0 ? `Redraw (${own.rerollsLeft} left)` : 'No redraws left'}
+			{own.rerollsLeft > 0 ? text.picking.redraw(own.rerollsLeft) : text.picking.noRedraws}
 		</Button>
-		<Button onclick={() => connection.send({ type: 'lock-in' })}>Lock this in</Button>
+		<Button onclick={() => connection.send({ type: 'lock-in' })}>{text.picking.lockThisIn}</Button>
 	</div>
 {:else}
-	<p class="text-muted">Drawing an article for you…</p>
+	<p class="text-muted">{text.picking.drawing}</p>
 {/if}

@@ -1,6 +1,11 @@
 <script lang="ts">
 	/**
-	 * The name set the way the template it is named after appears in an article:
+	 * The name is a logotype, not a string: it is drawn here rather than taken
+	 * from the message catalogue, because a locale should translate what the game
+	 * says, not what it is called. `brand` in the catalogue exists for the places
+	 * the name appears inside a sentence.
+	 *
+	 * It is set the way the template it is named after appears in an article:
 	 * bracketed, in the serif face, the brackets a shade back from the words so
 	 * they read as punctuation rather than as letters.
 	 */

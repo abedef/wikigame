@@ -1,3 +1,4 @@
+import { LOCALES } from '$lib/i18n';
 import { env as publicEnv } from '$env/dynamic/public';
 import { normaliseRoomCode } from '$lib/room-code';
 import { reserveRoomCode } from '$lib/server/rooms';
@@ -10,21 +11,21 @@ import type { Actions } from './$types';
  * joining still work if the page's JavaScript has not loaded yet.
  */
 export const actions: Actions = {
-	name: async ({ request, cookies }) => {
+	name: async ({ request, cookies, locals }) => {
 		const form = await request.formData();
 		const name = saveName(cookies, String(form.get('name') ?? ''));
-		if (!name) return fail(400, { nameError: 'Names need at least one character.' });
+		if (!name) return fail(400, { nameError: LOCALES[locals.locale].landing.nameTooShort });
 		return { name };
 	},
 
-	join: async ({ request }) => {
+	join: async ({ request, locals }) => {
 		const form = await request.formData();
 		const code = normaliseRoomCode(String(form.get('code') ?? ''));
-		if (!code) return fail(400, { codeError: 'Room codes are four letters and numbers.' });
+		if (!code) return fail(400, { codeError: LOCALES[locals.locale].landing.badCode });
 		redirect(303, `/room/${code}`);
 	},
 
-	host: async ({ url, fetch, platform }) => {
+	host: async ({ url, fetch, platform, locals }) => {
 		let code: string | null = null;
 
 		try {
@@ -49,7 +50,7 @@ export const actions: Actions = {
 		}
 
 		if (!code) {
-			return fail(502, { hostError: 'The game server is not answering. Try again in a moment.' });
+			return fail(502, { hostError: LOCALES[locals.locale].landing.serverSilent });
 		}
 
 		redirect(303, `/room/${code}`);

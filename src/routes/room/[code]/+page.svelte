@@ -9,9 +9,12 @@
 	import Reveal from '$lib/game/Reveal.svelte';
 	import { GameConnection } from '$lib/game-connection.svelte';
 	import { resolve } from '$app/paths';
+	import { t } from '$lib/i18n';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+
+	const text = t();
 
 	let connection = $state<GameConnection | null>(null);
 
@@ -33,35 +36,28 @@
 		setTimeout(() => (copied = false), 1500);
 	}
 
-	const headings: Record<string, string> = {
-		lobby: 'Lobby',
-		picking: 'Choosing articles',
-		reading: 'Reading',
-		questioning: 'Questioning',
-		reveal: 'Reveal',
-		finished: 'Final scores'
-	};
+	const headings: Record<string, string> = text.room.stage;
 </script>
 
 <svelte:head>
-	<title>Room {data.code} — [citation needed]</title>
+	<title>{text.meta.roomTitle(data.code)}</title>
 	<meta name="robots" content="noindex" />
 </svelte:head>
 
 {#if connection?.error && connection.status === 'closed'}
 	<Card>
-		<h1 class="wiki-heading text-2xl">Can't join room {data.code}</h1>
-		<p class="text-muted mt-2">{connection.error.message}</p>
+		<h1 class="wiki-heading text-2xl">{text.room.cantJoin(data.code)}</h1>
+		<p class="text-muted mt-2">{text.errors[connection.error.code] ?? connection.error.message}</p>
 		<a
 			class="text-accent mt-4 inline-block font-semibold underline underline-offset-4"
 			href={resolve('/')}
 		>
-			Back to the start
+			{text.room.back}
 		</a>
 	</Card>
 {:else if !room || !connection}
 	<Card>
-		<p class="text-muted text-center">Connecting to room {data.code}…</p>
+		<p class="text-muted text-center">{text.room.connectingTo(data.code)}</p>
 	</Card>
 {:else}
 	<Card>
@@ -71,11 +67,11 @@
 			<div class="flex items-baseline justify-between gap-4">
 				<p class="text-muted text-xs font-semibold tracking-widest uppercase">
 					{#if room.stage === 'lobby'}
-						Room
+						{text.room.label}
 					{:else if room.stage === 'finished'}
-						Room {room.code}
+						{text.room.withCode(room.code)}
 					{:else}
-						Round {room.round} of {room.settings.rounds}
+						{text.room.roundOf(room.round, room.settings.rounds)}
 					{/if}
 				</p>
 				{#if room.stage === 'lobby' && copyable}
@@ -84,7 +80,7 @@
 						onclick={copyInvite}
 						class="text-accent shrink-0 cursor-pointer text-sm underline underline-offset-4"
 					>
-						{copied ? '[link copied]' : '[copy invite link]'}
+						{copied ? text.room.inviteCopied : text.room.copyInvite}
 					</button>
 				{/if}
 			</div>
@@ -97,12 +93,14 @@
 
 		{#if connection.status !== 'open'}
 			<p class="border-line text-muted mt-4 rounded-xl border border-dashed px-3 py-2 text-sm">
-				{connection.status === 'reconnecting' ? 'Connection lost — reconnecting…' : 'Connecting…'}
+				{connection.status === 'reconnecting' ? text.room.reconnecting : text.room.connecting}
 			</p>
 		{/if}
 
 		{#if connection.error}
-			<p class="text-accent mt-4 text-sm">{connection.error.message}</p>
+			<p class="text-accent mt-4 text-sm">
+				{text.errors[connection.error.code] ?? connection.error.message}
+			</p>
 		{/if}
 
 		<section class="mt-6">
@@ -124,7 +122,7 @@
 		{#if room.stage !== 'finished' && !(room.stage === 'questioning' && connection.isGuesser)}
 			<section class="border-line mt-6 border-t pt-6">
 				<h2 class="text-muted mb-3 text-sm font-semibold tracking-widest uppercase">
-					Players ({room.players.length}){away ? ` · ${away} away` : ''}
+					{text.players.heading(room.players.length)}{away ? ` · ${text.players.away(away)}` : ''}
 				</h2>
 				<PlayerList {connection} />
 			</section>
@@ -136,7 +134,7 @@
 				class="text-muted hover:text-ink mt-6 cursor-pointer text-sm underline underline-offset-4"
 				onclick={() => connection?.send({ type: 'abort-round' })}
 			>
-				Abandon this round and deal again
+				{text.room.abandon}
 			</button>
 		{/if}
 	</Card>

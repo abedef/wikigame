@@ -1,10 +1,12 @@
 <script lang="ts">
+	import { t } from '$lib/i18n';
 	import Button from '$lib/Button.svelte';
 	import type { GameConnection } from '$lib/game-connection.svelte';
 	import ArticleHeading from './ArticleHeading.svelte';
 
 	let { connection }: { connection: GameConnection } = $props();
 
+	const text = t();
 	const room = $derived(connection.state);
 	const reading = $derived(connection.own.reading);
 
@@ -28,8 +30,10 @@
      the card's full width; they mirror its p-6 sm:p-8. -->
 <div class="bg-panel sticky top-0 z-10 -mx-6 mb-4 px-6 pt-2 pb-3 sm:-mx-8 sm:px-8">
 	<div class="flex items-baseline justify-between">
-		<span class="text-muted text-sm font-semibold tracking-widest uppercase">Reading</span>
-		<span class="text-2xl font-black">{secondsLeft}s</span>
+		<span class="text-muted text-sm font-semibold tracking-widest uppercase"
+			>{text.reading.label}</span
+		>
+		<span class="text-2xl font-black">{text.reading.secondsLeft(secondsLeft)}</span>
 	</div>
 	<div class="bg-line mt-2 h-1.5 overflow-hidden rounded-full">
 		<div
@@ -40,11 +44,8 @@
 </div>
 
 {#if reading}
-	<p class="text-accent font-semibold">This one is yours. You are the reader.</p>
-	<p class="text-muted mt-1 mb-4 text-sm">
-		You want to be found: the guesser scores with you. Take in enough to prove you were really here
-		— but remember everyone else can hear your answers and will copy them.
-	</p>
+	<p class="text-accent font-semibold">{text.reading.yoursLead}</p>
+	<p class="text-muted mt-1 mb-4 text-sm">{text.reading.yoursBody}</p>
 	<ArticleHeading article={reading} href={reading.url} />
 	<p class="mt-4 leading-relaxed">{reading.extract}</p>
 	<!-- Out to Wikipedia, not to a route in this app. -->
@@ -55,22 +56,17 @@
 		rel="noreferrer"
 		class="text-accent mt-4 inline-block text-sm font-semibold underline underline-offset-4"
 	>
-		Open the full article
+		{text.reading.openFull}
 	</a>
 	<!-- eslint-enable svelte/no-navigation-without-resolve -->
 	<div class="mt-6">
 		<Button class="w-full" onclick={() => connection.send({ type: 'done-reading' })}>
-			I've read enough — start the questions
+			{text.reading.doneReading}
 		</Button>
 	</div>
 {:else if room?.article}
 	<ArticleHeading article={room.article} />
 	<p class="text-muted mt-4">
-		{#if connection.isGuesser}
-			One of the others is reading this right now. Everyone will claim they did.
-		{:else}
-			Someone else drew this and is reading it now. You will have to pretend it was you, so think
-			about anything you already know on the subject.
-		{/if}
+		{connection.isGuesser ? text.reading.guesserBody : text.reading.blufferBody}
 	</p>
 {/if}

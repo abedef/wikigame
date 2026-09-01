@@ -3,37 +3,38 @@
 	import Button from '$lib/Button.svelte';
 	import Card from '$lib/Card.svelte';
 	import Wordmark from '$lib/Wordmark.svelte';
+	import { t } from '$lib/i18n';
 	import { MAX_NAME_LENGTH } from '$lib/protocol';
 	import { ROOM_CODE_LENGTH } from '$lib/room-code';
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();
 
+	const text = t();
+
 	let editingName = $state(false);
 	const name = $derived(form?.name ?? data.session.name);
 </script>
 
 <svelte:head>
-	<title>[citation needed]</title>
-	<meta
-		name="description"
-		content="A bluffing game played with Wikipedia articles. Everyone claims they read it; one of them did."
-	/>
+	<title>{text.brand}</title>
+	<meta name="description" content={text.meta.description} />
 </svelte:head>
 
 <Card>
 	<div class="text-center">
 		<h1><Wordmark /></h1>
-		<p class="text-muted mt-3 font-serif">The free bluffing game that anyone can play.</p>
+		<p class="text-muted mt-3 font-serif">{text.meta.tagline}</p>
 	</div>
 
 	<p class="border-line-soft mt-6 border-t pt-6 leading-relaxed">
-		Everyone at the table claims they read the article. One of them actually
+		{text.landing.pitchBefore}
 		<!-- The marker has to stay welded to the word it annotates; on a narrow
 		     screen it otherwise wraps onto a line of its own and stops reading as
 		     a footnote at all. -->
 		<span class="whitespace-nowrap"
-			>did.<sup class="text-accent ml-0.5 text-[0.7em]">[citation needed]</sup></span
+			>{text.landing.pitchLastWord}<sup class="text-accent ml-0.5 text-[0.7em]">{text.brand}</sup
+			></span
 		>
 	</p>
 
@@ -49,7 +50,7 @@
 						return update({ reset: false });
 					}}
 			>
-				<label class="sr-only" for="name">Your name</label>
+				<label class="sr-only" for="name">{text.landing.yourName}</label>
 				<!-- svelte-ignore a11y_autofocus -->
 				<input
 					id="name"
@@ -61,15 +62,15 @@
 					class="border-line bg-surface focus-visible:outline-accent min-w-0 flex-1 rounded-xl border
 						px-3 py-2 focus-visible:outline-2"
 				/>
-				<Button type="submit">Save</Button>
+				<Button type="submit">{text.landing.save}</Button>
 			</form>
 		{:else}
 			<p class="text-muted">
-				You are <span class="text-ink font-semibold">{name}</span>.
+				{text.landing.youAre} <span class="text-ink font-semibold">{name}</span>.
 				<button
 					type="button"
 					class="hover:text-ink cursor-pointer underline underline-offset-4"
-					onclick={() => (editingName = true)}>Change</button
+					onclick={() => (editingName = true)}>{text.landing.change}</button
 				>
 			</p>
 		{/if}
@@ -80,22 +81,24 @@
 
 	<div class="mt-6 grid gap-4">
 		<form method="POST" action="?/host" use:enhance>
-			<Button type="submit" class="w-full">Host a new game</Button>
+			<Button type="submit" class="w-full">{text.landing.host}</Button>
 		</form>
 		{#if form?.hostError}
 			<p class="text-accent text-sm">{form.hostError}</p>
 		{/if}
 
 		<div class="text-muted flex items-center gap-3 text-sm">
-			<span class="bg-line h-px flex-1"></span>or join one<span class="bg-line h-px flex-1"></span>
+			<span class="bg-line h-px flex-1"></span>{text.landing.orJoin}<span
+				class="bg-line h-px flex-1"
+			></span>
 		</div>
 
 		<form method="POST" action="?/join" class="flex gap-2" use:enhance>
-			<label class="sr-only" for="code">Room code</label>
+			<label class="sr-only" for="code">{text.landing.roomCode}</label>
 			<input
 				id="code"
 				name="code"
-				placeholder="Room code"
+				placeholder={text.landing.roomCode}
 				maxlength={ROOM_CODE_LENGTH}
 				size={ROOM_CODE_LENGTH}
 				autocomplete="off"
@@ -106,7 +109,7 @@
 					px-3 py-2 text-center text-lg font-semibold tracking-[0.4em] uppercase
 					focus-visible:outline-2"
 			/>
-			<Button type="submit" variant="secondary">Join</Button>
+			<Button type="submit" variant="secondary">{text.landing.join}</Button>
 		</form>
 		{#if form?.codeError}
 			<p class="text-accent text-sm">{form.codeError}</p>
