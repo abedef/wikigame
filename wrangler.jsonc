@@ -27,6 +27,10 @@
 	// apex so a player cannot end up with a second identity on a second origin.
 	// The worker's own name stays "wikigame": renaming it would create a new
 	// worker and strand the durable objects holding every live room.
+	// One canonical origin. A player is a cookie, so a second live hostname would
+	// hand the same person a second identity; the workers.dev URL is off rather
+	// than left to the default that adding routes implies.
+	"workers_dev": false,
 	"routes": [
 		{ "pattern": "citationneededgame.com", "custom_domain": true },
 		{ "pattern": "www.citationneededgame.com", "custom_domain": true }

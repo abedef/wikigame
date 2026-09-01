@@ -7,7 +7,17 @@
 	let { size = 'large' }: { size?: 'large' | 'small' } = $props();
 </script>
 
-<span class="font-serif {size === 'large' ? 'text-4xl sm:text-5xl' : 'text-xl'} whitespace-nowrap">
+<!--
+	The name must not break across lines, so it cannot be allowed to grow wider
+	than the card either. It is ~7.6x its font size, and the card gives a page
+	80px to its padding, so 9vw keeps it inside anything down to a 250px screen
+	before the ceiling takes over on desktop.
+-->
+<span
+	class="font-serif {size === 'large'
+		? 'text-[clamp(1.75rem,9vw,3rem)]'
+		: 'text-xl'} whitespace-nowrap"
+>
 	<span class="text-muted">[</span><span class="text-ink">citation needed</span><span
 		class="text-muted">]</span
 	>

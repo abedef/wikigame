@@ -28,8 +28,12 @@
 	</div>
 
 	<p class="border-line-soft mt-6 border-t pt-6 leading-relaxed">
-		Everyone at the table claims they read the article. One of them actually did.<sup
-			class="text-accent ml-0.5 text-[0.7em]">[citation needed]</sup
+		Everyone at the table claims they read the article. One of them actually
+		<!-- The marker has to stay welded to the word it annotates; on a narrow
+		     screen it otherwise wraps onto a line of its own and stops reading as
+		     a footnote at all. -->
+		<span class="whitespace-nowrap"
+			>did.<sup class="text-accent ml-0.5 text-[0.7em]">[citation needed]</sup></span
 		>
 	</p>
 
