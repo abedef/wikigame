@@ -7,7 +7,7 @@
  * just fill in its blanks, and a function lets them.
  */
 
-import type { ErrorCode } from '../protocol';
+import { MIN_PLAYERS, type ErrorCode } from '../protocol';
 
 const plural = new Intl.PluralRules('en');
 const list = new Intl.ListFormat('en', { style: 'long', type: 'conjunction' });
@@ -22,8 +22,9 @@ const errors: Record<ErrorCode, string> = {
 	'room-full': 'That room is full.',
 	'game-in-progress': 'That game has already started.',
 	'not-host': 'Only the host can do that.',
-	'not-guesser': 'Only the guesser names a reader.',
-	'not-enough-players': 'Everyone has to be ready first.',
+	'not-guesser': 'Only the guesser can pick.',
+	'not-enough-players': `You need at least ${MIN_PLAYERS} players to start.`,
+	'not-everyone-ready': 'Everyone has to be ready first.',
 	'no-rerolls-left': 'You have used all your redraws.',
 	'wikipedia-unavailable': 'Wikipedia is not answering. Try again in a moment.',
 	'bad-request': 'That did not make sense to the game server.',
@@ -98,7 +99,6 @@ export const en = {
 		copyInvite: '[copy invite link]',
 		inviteCopied: '[link copied]',
 		abandon: 'Abandon this round and deal again',
-		help: 'Help',
 		helpTitle: 'What am I meant to be doing?',
 		helpNow: 'Right now',
 		helpRules: 'The game',
@@ -107,7 +107,6 @@ export const en = {
 		stage: {
 			lobby: 'Lobby',
 			picking: 'Choosing articles',
-			pick: '[pick]',
 			reading: 'Reading',
 			questioning: 'Questioning',
 			reveal: 'Reveal',
@@ -118,7 +117,7 @@ export const en = {
 	lobby: {
 		changeName: 'Change your name',
 		rounds: 'Rounds',
-		roundsHint: 'How many times the guesser changes.',
+		roundsHint: 'How many rounds you play.',
 		redraws: 'Redraws',
 		redrawsHint: 'How many articles each player can throw back.',
 		readingTime: 'Reading time',
@@ -153,7 +152,7 @@ export const en = {
 			settled === total
 				? 'Everyone has picked. Here we go.'
 				: `${settled} of ${total} have picked. Hang on.`,
-		hint: "Pick something you could talk about for a minute. You'll get to read it properly in a second, and it might be the one everyone gets quizzed on.",
+		hint: "Pick something you could talk about for a minute. Once everyone has locked one in you'll all get to read properly, and this might be the one everyone gets quizzed on.",
 		redraw: (left: number) => `Redraw (${left} left)`,
 		noRedraws: 'No redraws left',
 		lockThisIn: 'Lock this in',
@@ -222,7 +221,7 @@ export const en = {
 		guesser: '[guesser]',
 		reader: '[reader]',
 		host: '[host]',
-		disconnected: 'away',
+		disconnected: 'Away',
 		ready: 'Ready',
 		notReady: 'Not ready',
 		choosing: 'Choosing',

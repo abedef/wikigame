@@ -493,7 +493,7 @@ export class Room extends DurableObject<Env> {
 			);
 		}
 		if (present.some((player) => player.ready !== 1)) {
-			return this.sendError(socket, 'not-enough-players', 'Everyone has to be ready first.');
+			return this.sendError(socket, 'not-everyone-ready', 'Everyone has to be ready first.');
 		}
 
 		// Players who wandered off before the game began do not get carried into it.

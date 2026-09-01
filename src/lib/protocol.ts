@@ -153,6 +153,7 @@ export type ErrorCode =
 	| 'not-host'
 	| 'not-guesser'
 	| 'not-enough-players'
+	| 'not-everyone-ready'
 	| 'no-rerolls-left'
 	| 'wikipedia-unavailable'
 	| 'bad-request'
