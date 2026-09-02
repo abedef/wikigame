@@ -43,8 +43,11 @@ export const en = {
 		needsBefore:
 			"Grab two or more friends and a way to talk to each other. Your goal is to convince everyone you've read a random Wikipedia article you may never have heard of in your life, so I hope you've got a good poker face. You'll pick the game up in about a",
 		needsLastWord: 'minute.',
+		// Opens with the tagline, so the card and the page say the same thing, then
+		// asks the question the page does not: read with nothing around it, this
+		// has to give a stranger a reason to click rather than only a description.
 		description:
-			'A quick social deduction game played with random Wikipedia articles. Everyone reads one, only one of them comes up, and you all have to claim you read that one.',
+			'A social deduction game played with whatever Wikipedia throws at you. Can you bluff better than everyone else?',
 		roomTitle: (code: string) => `Room ${code} — [citation needed]`,
 		disclaimer:
 			'Not affiliated with or endorsed by the Wikimedia Foundation. Wikipedia is a registered trademark of the Wikimedia Foundation.'
