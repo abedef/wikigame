@@ -20,7 +20,4 @@
 	{:else}
 		<h3 class="font-serif text-2xl break-words">{article.title}</h3>
 	{/if}
-	{#if article.description}
-		<p class="text-muted mt-1 text-sm">{article.description}</p>
-	{/if}
 </div>

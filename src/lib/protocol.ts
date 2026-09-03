@@ -29,10 +29,16 @@ export type Stage =
 	| 'finished';
 
 /** What everyone may know about an article: enough to judge it, not to fake it. */
+/**
+ * A title and nothing else.
+ *
+ * Wikipedia offers a one-line description with every article — "village in
+ * Bulgaria", "species of butterfly" — and it is deliberately not carried here.
+ * Announced with the topic it hands every bluffer the subject for free, which
+ * is most of the work the round is supposed to ask of them.
+ */
 export type ArticleCard = {
 	title: string;
-	/** Wikipedia's one-line description, e.g. "village in Bulgaria". */
-	description: string;
 };
 
 /** The article itself. Only the reader sees this, and only while reading. */

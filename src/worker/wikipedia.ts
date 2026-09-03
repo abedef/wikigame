@@ -41,7 +41,6 @@ const ATTEMPTS = 6;
 type SummaryResponse = {
 	type?: string;
 	title?: string;
-	description?: string;
 	extract?: string;
 	content_urls?: { desktop?: { page?: string } };
 	thumbnail?: { source?: string };
@@ -81,7 +80,6 @@ export async function randomArticle(
 
 			return {
 				title: summary.title!,
-				description: summary.description ?? '',
 				extract: summary.extract!,
 				url:
 					summary.content_urls?.desktop?.page ??

@@ -238,10 +238,7 @@ export class Room extends DurableObject<Env> {
 			// everyone is still reading, knowing which article was drawn would tell
 			// each player whether theirs was picked, and the bluffers would stop.
 			// The text stays private until the round is over.
-			article:
-				article && (stage === 'questioning' || revealed)
-					? { title: article.title, description: article.description }
-					: null,
+			article: article && (stage === 'questioning' || revealed) ? { title: article.title } : null,
 			readingMsLeft:
 				stage === 'reading' && readingEndsAt !== null
 					? Math.max(0, readingEndsAt - Date.now())
@@ -262,7 +259,7 @@ export class Room extends DurableObject<Env> {
 		return {
 			// While picking you weigh up your own article on its title alone; the
 			// text comes later, when everybody reads.
-			candidate: candidate ? { title: candidate.title, description: candidate.description } : null,
+			candidate: candidate ? { title: candidate.title } : null,
 			rerollsLeft: Math.max(0, this.settings.rerolls - (player?.rerolls_used ?? 0)),
 			lockedIn: player?.locked_in === 1,
 			// Your own article, whether or not it turns out to be the one asked

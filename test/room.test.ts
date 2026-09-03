@@ -140,9 +140,11 @@ describe('a round', () => {
 
 		await waitFor(() => guessees.every((c) => c.own!.candidate), 'articles dealt');
 		expect(guesser.own!.candidate).toBeNull();
-		// A candidate is a title and a description. The prose is not on offer.
+		// A candidate is a title and nothing else. Not the prose, and not
+		// Wikipedia's one-line description either: announced with the topic that
+		// would hand every bluffer the subject without their reading a word.
 		for (const client of guessees) {
-			expect(Object.keys(client.own!.candidate!).sort()).toEqual(['description', 'title']);
+			expect(Object.keys(client.own!.candidate!)).toEqual(['title']);
 			expect(client.own!.reading).toBeNull();
 		}
 		expect(clients[0].state!.article).toBeNull();
