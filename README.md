@@ -121,8 +121,10 @@ cannot be completed, in which case no points are awarded and the chair passes on
 The game was first attempted in September 2021, under the working title _Don't Lie to Me_, as a
 [Svelte](https://svelte.dev) front end talking to a separate session server. It got as far as
 creating and joining a session, and distinguished two roles — a _guesser_ and an _answerer_ —
-but no round was ever played, and the work was abandoned the same day. The session server was
-never committed and does not survive.
+but no round was ever played, and the work was abandoned the same day. Its server survives
+separately: a [Sinatra](https://sinatrarb.com) application over SQLite that could seat seven
+players against a four-character session code, whose endpoint for advancing a round was an
+empty stub and whose table of scores was never written to.
 
 A second implementation followed in 2023 on a [PocketBase](https://pocketbase.io) backend. That
 version reached a working lobby but no completed round, and development stopped in November
