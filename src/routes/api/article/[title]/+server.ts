@@ -25,9 +25,14 @@ export const GET: RequestHandler = async ({ params, url, setHeaders }) => {
 
 	setHeaders({
 		'Content-Type': 'text/html; charset=utf-8',
+		// Wikipedia's stylesheet and its pictures now come from here too, so both
+		// are allowed from our own origin and from nowhere else. Still no scripts,
+		// no navigation, and framable only by us.
 		'Content-Security-Policy': [
 			"default-src 'none'",
-			"style-src 'unsafe-inline'",
+			"style-src 'self' 'unsafe-inline'",
+			"img-src 'self' data:",
+			"font-src 'self' data:",
 			"frame-ancestors 'self'",
 			"form-action 'none'",
 			"base-uri 'none'"

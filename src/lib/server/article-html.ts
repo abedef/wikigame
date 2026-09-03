@@ -15,61 +15,90 @@ const MOBILE_HTML = (language: string, title: string) =>
 	`https://${language}.wikipedia.org/api/rest_v1/page/mobile-html/${encodeURIComponent(title)}`;
 
 /**
- * Cosmetic, not the security boundary. The document is served with a CSP that
- * allows no scripts and no navigation, and framed with a `sandbox` that grants
- * neither, so a miss here is untidy rather than dangerous.
+ * Rewrite Wikipedia's own markup so it can be served from here.
+ *
+ * The aim is the article as Wikipedia renders it — its stylesheet, its
+ * infoboxes, its pictures — with two things taken away. Scripts go because the
+ * page is served under a policy that forbids them and framed in a sandbox that
+ * would not run them anyway. Links go because that is the rule the reader plays
+ * under: they get this article and cannot wander into another.
+ *
+ * Everything else that travels does so through us, because an activity may only
+ * load what comes from its own proxy domain.
  */
-export function stripForReading(html: string): string {
+export function rewriteForReading(html: string, language: string): string {
+	const asset = (raw: string) => {
+		const absolute = raw.startsWith('//') ? `https:${raw}` : raw;
+		return absolute.startsWith('https://')
+			? `/api/article-asset?u=${encodeURIComponent(absolute)}`
+			: raw;
+	};
+
 	return (
 		html
-			// Their scripts and stylesheets: we supply our own look, and the CSP
-			// would refuse to run the scripts in any case.
 			.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '')
-			.replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '')
-			.replace(/<link\b[^>]*>/gi, '')
+			.replace(/<script\b[^>]*\/?>/gi, '')
+			// Their stylesheets, but fetched through us.
+			.replace(/<link\b[^>]*rel="stylesheet"[^>]*>/gi, '')
 			.replace(/<base\b[^>]*>/gi, '')
-			// Images and media come from upload.wikimedia.org, which the activity's
-			// content policy will not load. Dropping them beats a page of broken
-			// frames; see the note in #4 about proxying them properly.
-			.replace(/<img\b[^>]*>/gi, '')
-			.replace(/<picture\b[^>]*>[\s\S]*?<\/picture>/gi, '')
-			.replace(/<video\b[^>]*>[\s\S]*?<\/video>/gi, '')
-			.replace(/<audio\b[^>]*>[\s\S]*?<\/audio>/gi, '')
-			.replace(/<iframe\b[^>]*>[\s\S]*?<\/iframe>/gi, '')
-			// The point of the exercise: an anchor with no href is just text.
+			.replace(
+				/<\/head>/i,
+				`<link rel="stylesheet" href="/api/article-style/${language}"><style>${OVERRIDES}</style></head>`
+			)
+			// Pictures, likewise. srcset carries several, each needing the same.
+			.replace(/\bsrc="([^"]+)"/gi, (whole, url: string) =>
+				/\.(png|jpe?g|gif|svg|webp)/i.test(url) ? `src="${asset(url)}"` : whole
+			)
+			.replace(/\bsrcset="([^"]+)"/gi, (_whole, set: string) => {
+				const rewritten = set
+					.split(',')
+					.map((part) => {
+						const [url, ...rest] = part.trim().split(/\s+/);
+						return [asset(url), ...rest].join(' ');
+					})
+					.join(', ');
+				return `srcset="${rewritten}"`;
+			})
+			// Wikipedia defers its images: what ships is a placeholder span carrying
+			// the real URL in data-src, which their script swaps for an <img> once
+			// it scrolls into view. No script runs here, so the swap is done now.
+			.replace(
+				/<span\b([^>]*pcs-lazy-load-placeholder[^>]*)>(?:\s*<span[^>]*><\/span>\s*)?<\/span>/gi,
+				(whole, attributes: string) => {
+					const value = (name: string) =>
+						new RegExp(`data-${name}="([^"]*)"`, 'i').exec(attributes)?.[1];
+					const src = value('src');
+					if (!src) return whole;
+					const parts = [`src="${src}"`];
+					const srcset = value('srcset');
+					if (srcset) parts.push(`srcset="${srcset}"`);
+					for (const name of ['alt', 'width', 'height']) {
+						const found = value(name);
+						if (found) parts.push(`${name}="${found}"`);
+					}
+					return `<img class="mw-file-element" ${parts.join(' ')}>`;
+				}
+			)
+			// The rule of the round: an anchor with no href is just text.
 			.replace(/<a\b[^>]*>/gi, '<a>')
-			// Wikipedia's own furniture, which is noise without its stylesheet.
-			.replace(/<section\b[^>]*class="[^"]*pcs-edit[^"]*"[^>]*>[\s\S]*?<\/section>/gi, '')
-			.replace(/<span\b[^>]*class="[^"]*pcs-edit-section-link[^"]*"[^>]*>[\s\S]*?<\/span>/gi, '')
 	);
 }
 
-/** Our own styling, so the article reads like the rest of the game. */
-const STYLE = `
-:root { color-scheme: light dark; --ink:#202122; --muted:#54595d; --line:#c8ccd1; --bg:#fff; }
-@media (prefers-color-scheme: dark) {
-	:root { --ink:#f8f9fa; --muted:#a2a9b1; --line:#3c4145; --bg:#1b1e21; }
-}
-html { background: var(--bg); }
-body {
-	margin: 0; padding: 1rem 1.1rem 2rem;
-	background: var(--bg); color: var(--ink);
-	font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-	overflow-wrap: break-word;
-}
-h1, h2, h3, h4 {
-	font-family: "Linux Libertine", Georgia, "Times New Roman", Times, serif;
-	font-weight: 400; line-height: 1.25; margin: 1.4em 0 .4em;
-}
-h1 { font-size: 1.7rem } h2 { font-size: 1.35rem; border-bottom: 1px solid var(--line); padding-bottom: .2em }
-h3 { font-size: 1.1rem } p { margin: 0 0 .9em }
-/* Anchors kept their tags but lost their targets; make that visible. */
-a { color: inherit; text-decoration: none }
-table { display: block; overflow-x: auto; max-width: 100%; border-collapse: collapse; font-size: .9em }
-td, th { border: 1px solid var(--line); padding: .3em .5em; text-align: left }
-figure, .infobox, .navbox, .hatnote, .thumb, .mw-editsection, .reference, .noprint { display: none }
-sup { display: none }
-ul, ol { padding-left: 1.2em }
+/**
+ * A short sheet on top of Wikipedia's own, for the handful of things that make
+ * no sense in a game: the furniture that leads somewhere, and a reminder that
+ * the words which look like links are not.
+ */
+const OVERRIDES = `
+.pcs-edit-section-link, .pcs-edit-section-header, .mw-editsection, .navbox, .noprint { display: none !important }
+
+/* Infoboxes arrive collapsed behind a "Quick facts" control that their script
+   would open. Nothing is going to click it, and the table underneath is the
+   most quotable thing on the page, so it starts open and the control goes. */
+.pcs-collapse-table-content { display: block !important }
+.pcs-collapse-table-collapsed-container, .pcs-collapse-table-collapse-text { display: none !important }
+a { cursor: default !important; text-decoration: none !important; color: inherit !important }
+body { -webkit-text-size-adjust: 100%; }
 `;
 
 export type ArticlePage = { html: string; status: number };
@@ -86,17 +115,8 @@ export async function readableArticle(
 		return { status: response.status === 404 ? 404 : 502, html: '' };
 	}
 
-	const body = stripForReading(await response.text());
-	// Rebuilt rather than patched, so nothing of theirs survives into the head.
-	const html = `<!doctype html>
-<html lang="${language}">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${title.replace(/[<&]/g, '')}</title>
-<style>${STYLE}</style>
-</head>
-<body>${body.replace(/^[\s\S]*?<body[^>]*>/i, '').replace(/<\/body>[\s\S]*$/i, '')}</body>
-</html>`;
-	return { status: 200, html };
+	// Their document, kept whole and rewritten in place, rather than a new one
+	// built around an extract of it: the structure is most of what makes an
+	// article readable.
+	return { status: 200, html: rewriteForReading(await response.text(), language) };
 }
