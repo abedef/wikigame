@@ -118,12 +118,18 @@ cannot be completed, in which case no points are awarded and the chair passes on
 
 ## History
 
-The game was first implemented in 2023 on a [PocketBase](https://pocketbase.io) backend. That
+The game was first attempted in September 2021, under the working title _Don't Lie to Me_, as a
+[Svelte](https://svelte.dev) front end talking to a separate session server. It got as far as
+creating and joining a session, and distinguished two roles — a _guesser_ and an _answerer_ —
+but no round was ever played, and the work was abandoned the same day. The session server was
+never committed and does not survive.
+
+A second implementation followed in 2023 on a [PocketBase](https://pocketbase.io) backend. That
 version reached a working lobby but no completed round, and development stopped in November
-2023; it remains in the repository on the `master` branch. A second attempt was scaffolded in
+2023; it remains in the repository on the `master` branch. A third attempt was scaffolded in
 April 2025 and left unfinished.
 
-The present implementation dates from 2026 and shares no history with either. It replaces the
+The present implementation dates from 2026 and shares no history with any of them. It replaces the
 PocketBase backend with Cloudflare Durable Objects, moves all game logic to the server, and
 completes the round loop. The rules described above were settled during that rewrite; earlier
 drafts had every player read a different article, which left all but one player's reading
