@@ -126,7 +126,9 @@ separately: a [Sinatra](https://sinatrarb.com) application over SQLite that coul
 players against a four-character session code, whose endpoint for advancing a round was an
 empty stub and whose table of scores was never written to.
 
-A second implementation followed in 2023 on a [PocketBase](https://pocketbase.io) backend. That
+A second implementation was planned on Christmas Day 2022 — a note from that date resolves to
+start over and "simplify as much as I can" — and followed in 2023 on a
+[PocketBase](https://pocketbase.io) backend. That
 version reached a working lobby but no completed round, and development stopped in November
 2023; it remains in the repository on the `master` branch. A third attempt was scaffolded in
 April 2025 and left unfinished.
